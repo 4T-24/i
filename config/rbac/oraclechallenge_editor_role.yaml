@@ -1,0 +1,27 @@
+# permissions for end users to edit oraclechallenges.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: atsi
+    app.kubernetes.io/managed-by: kustomize
+  name: oraclechallenge-editor-role
+rules:
+- apiGroups:
+  - i.4ts.fr
+  resources:
+  - oraclechallenges
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - i.4ts.fr
+  resources:
+  - oraclechallenges/status
+  verbs:
+  - get

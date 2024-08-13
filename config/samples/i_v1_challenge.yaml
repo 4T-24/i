@@ -1,0 +1,32 @@
+apiVersion: i.4ts.fr/v1
+kind: Challenge
+metadata:
+  labels:
+    app.kubernetes.io/name: atsi
+    app.kubernetes.io/managed-by: kustomize
+  name: challenge-sample
+spec:
+  name: Test Challenge
+  timeout: 6000
+  pods:
+    - name: app
+      ports:
+        - port: 80
+          protocol: TCP
+      egress: false
+      spec:
+        containers:
+          - name: main
+            image: traefik/whoami:latest
+            resources:
+              requests:
+                memory: 100Mi
+                cpu: 75m
+              limits:
+                memory: 250Mi
+                cpu: 100m
+        automountServiceAccountToken: false
+  exposedPorts:
+    - kind: tcp
+      pod: app
+      port: 80

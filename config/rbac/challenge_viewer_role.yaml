@@ -1,0 +1,23 @@
+# permissions for end users to view challenges.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: atsi
+    app.kubernetes.io/managed-by: kustomize
+  name: challenge-viewer-role
+rules:
+- apiGroups:
+  - i.4ts.fr
+  resources:
+  - challenges
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - i.4ts.fr
+  resources:
+  - challenges/status
+  verbs:
+  - get

@@ -1,0 +1,5 @@
+## Append samples of your project ##
+resources:
+- i_v1_challenge.yaml
+- i_v1_oraclechallenge.yaml
+# +kubebuilder:scaffold:manifestskustomizesamples

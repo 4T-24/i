@@ -1,0 +1,27 @@
+# permissions for end users to edit challenges.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: atsi
+    app.kubernetes.io/managed-by: kustomize
+  name: challenge-editor-role
+rules:
+- apiGroups:
+  - i.4ts.fr
+  resources:
+  - challenges
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - i.4ts.fr
+  resources:
+  - challenges/status
+  verbs:
+  - get

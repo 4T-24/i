@@ -1,0 +1,34 @@
+apiVersion: i.4ts.fr/v1
+kind: OracleChallenge
+metadata:
+  labels:
+    app.kubernetes.io/name: atsi
+    app.kubernetes.io/managed-by: kustomize
+  name: oraclechallenge-sample
+spec:
+  name: Test Challenge
+  timeout: 10000
+  pods:
+    - name: app
+      ports:
+        - port: 80
+      spec:
+        containers:
+          - name: main
+            image: traefik/whoami:latest
+            resources:
+              requests:
+                memory: 100Mi
+                cpu: 75m
+              limits:
+                memory: 250Mi
+                cpu: 100m
+        automountServiceAccountToken: false
+  exposedPorts:
+    - kind: http
+      pod: app
+      port: 80
+  oraclePort:
+    route: /
+    pod: app
+    port: 80
