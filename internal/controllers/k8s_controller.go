@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 	v1 "instancer/api/v1"
+	"instancer/internal/ctf"
 
 	"codnect.io/chrono"
 	"github.com/sirupsen/logrus"
@@ -21,8 +22,10 @@ type InstancierReconciler struct {
 
 	init bool
 
-	availableChallenges       map[string]*v1.Challenge
-	availableOracleChallenges map[string]*v1.OracleChallenge
+	challenges     map[string]client.Object
+	ctfdChallenges []*v1.ChallengeSpec
+
+	CtfClient *ctf.Client
 
 	chrono.TaskScheduler
 	tasks map[string]chrono.ScheduledTask
@@ -44,34 +47,62 @@ func (r *InstancierReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		r.Init()
 	}
 
-	// Get the ressource and store it in our maps
+	// Register the challenge onto CTFd
+	defer r.ReconcileCTFd()
+
 	var challenge v1.Challenge
 	err := r.Get(ctx, req.NamespacedName, &challenge)
-	if err != nil {
-		var oraclechallenge v1.OracleChallenge
-		err := r.Get(ctx, req.NamespacedName, &oraclechallenge)
-		if err != nil {
-			return ctrl.Result{}, err
+	if err == nil {
+		if challenge.DeletionTimestamp != nil {
+			r.UnregisterChallenge(&challenge)
+			return ctrl.Result{}, nil
 		}
-		r.RegisterChallenge(&oraclechallenge)
-
-		return ctrl.Result{}, err
+		r.RegisterChallenge(&challenge)
+		return ctrl.Result{}, nil
 	}
 
-	r.RegisterChallenge(&challenge)
+	// Get the ressource and store it in our maps
+	var instancedChallenge v1.InstancedChallenge
+	err = r.Get(ctx, req.NamespacedName, &instancedChallenge)
+	if err == nil {
+		if instancedChallenge.DeletionTimestamp != nil {
+			r.UnregisterChallenge(&instancedChallenge)
+			return ctrl.Result{}, nil
+		}
+		r.RegisterChallenge(&instancedChallenge)
+		return ctrl.Result{}, nil
+	}
 
-	return ctrl.Result{}, nil
+	var oracleInstancedChallenge v1.OracleInstancedChallenge
+	err = r.Get(ctx, req.NamespacedName, &oracleInstancedChallenge)
+	if err == nil {
+		if oracleInstancedChallenge.DeletionTimestamp != nil {
+			r.UnregisterChallenge(&oracleInstancedChallenge)
+			return ctrl.Result{}, nil
+		}
+		r.RegisterChallenge(&oracleInstancedChallenge)
+		return ctrl.Result{}, nil
+	}
+
+	return ctrl.Result{}, err
+}
+
+func (r *InstancierReconciler) ReconcileCTFd() {
+	err := r.CtfClient.ReconcileChallenge(r.ctfdChallenges)
+	if err != nil {
+		logrus.WithError(err).Error("Failed to reconcile CTFd")
+		return
+	}
 }
 
 // Init is the first run
 func (r *InstancierReconciler) Init() {
-	r.availableChallenges = make(map[string]*v1.Challenge)
-	r.availableOracleChallenges = make(map[string]*v1.OracleChallenge)
+	r.challenges = make(map[string]client.Object)
 	r.tasks = make(map[string]chrono.ScheduledTask)
 
 	r.TaskScheduler = chrono.NewDefaultTaskScheduler()
 
-	var challenges v1.ChallengeList
+	var challenges v1.InstancedChallengeList
 	err := r.List(context.Background(), &challenges, client.InNamespace("default"))
 	if err != nil {
 		panic(err)
@@ -81,7 +112,7 @@ func (r *InstancierReconciler) Init() {
 		r.RegisterChallenge(&challenge)
 	}
 
-	var oraclechallenges v1.OracleChallengeList
+	var oraclechallenges v1.OracleInstancedChallengeList
 	err = r.List(context.Background(), &oraclechallenges, client.InNamespace("default"))
 	if err != nil {
 		panic(err)
@@ -98,6 +129,8 @@ func (r *InstancierReconciler) Init() {
 // SetupWithManager sets up the controller with the Manager.
 func (r *InstancierReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
+		Owns(&v1.InstancedChallenge{}, builder.WithPredicates(predicates())).
+		Owns(&v1.OracleInstancedChallenge{}, builder.WithPredicates(predicates())).
 		For(&v1.Challenge{}, builder.WithPredicates(predicates())).
 		Complete(r)
 }

@@ -2,8 +2,13 @@ package controllers
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	v1 "instancer/api/v1"
 	"instancer/internal/names"
+	"net/http"
+	"net/url"
+	"strings"
 	"time"
 
 	"codnect.io/chrono"
@@ -25,21 +30,20 @@ type InstanceStatus struct {
 	Servers []InstanceServers `json:"servers,omitempty"`
 }
 
-func (r *InstancierReconciler) GetChallengeSpec(challengeId string) (spec *v1.ChallengeSpec, found bool) {
-	var chall *v1.Challenge
-	var oraclechall *v1.OracleChallenge
-
-	chall, found = r.availableChallenges[challengeId]
+func (r *InstancierReconciler) GetChallengeSpec(challengeId string) (*v1.InstancedChallengeSpec, bool) {
+	obj, found := r.challenges[challengeId]
 	if !found {
-		oraclechall, found = r.availableOracleChallenges[challengeId]
-		if found {
-			spec = &oraclechall.Spec.ChallengeSpec
-		}
-	} else {
-		spec = &chall.Spec
+		return nil, false
 	}
 
-	return
+	switch o := obj.(type) {
+	case *v1.InstancedChallenge:
+		return &o.Spec, true
+	case *v1.OracleInstancedChallenge:
+		return &o.Spec.InstancedChallengeSpec, true
+	default:
+		return nil, false
+	}
 }
 
 func (r *InstancierReconciler) GetInstance(challengeId, instanceId string) (*InstanceStatus, error) {
@@ -100,4 +104,44 @@ func (r *InstancierReconciler) GetInstance(challengeId, instanceId string) (*Ins
 	}
 
 	return status, nil
+}
+
+func (r *InstancierReconciler) IsInstanceSolved(challengeId, instanceId string) (bool, error) {
+	var err error
+
+	chall, found := r.challenges[challengeId]
+	if !found {
+		return false, errors.New("challenge is not an oracle challenge")
+	}
+
+	var oraclechall *v1.OracleInstancedChallenge
+
+	switch v := chall.(type) {
+	case *v1.OracleInstancedChallenge:
+		oraclechall = v
+	default:
+		return false, err
+	}
+
+	namespace := names.GetNamespaceName(challengeId, instanceId)
+	uri := fmt.Sprintf("http://%s.%s:%d/", oraclechall.Spec.OraclePort.Pod, namespace, oraclechall.Spec.OraclePort.Port)
+	uri, err = url.JoinPath(uri, oraclechall.Spec.OraclePort.Route)
+	if err != nil {
+		return false, err
+	}
+
+	resp, err := http.Get(uri)
+	if err != nil {
+		if strings.Contains(err.Error(), "no such host") {
+			logrus.Info("Cannot reach host, am I on kubernetes ?")
+			return false, nil
+		}
+		return false, err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return false, nil
+	}
+
+	return true, nil
 }

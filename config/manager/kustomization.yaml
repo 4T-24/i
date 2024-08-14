@@ -6,3 +6,7 @@ images:
 - name: controller
   newName: controller
   newTag: latest
+configMapGenerator:
+- envs:
+  - .env
+  name: manager-environment

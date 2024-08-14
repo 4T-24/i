@@ -17,48 +17,28 @@ limitations under the License.
 package v1
 
 import (
-	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// ChallengePodPort defines the desired state of ChallengePodPort
-type ChallengePodPort struct {
-	// +kubebuilder:validation:Minimum=1
-	// +kubebuilder:validation:Maximum=65535
-	// +kubebuilder:validation:Required
-	Port int `json:"port"`
-
-	// +kubebuilder:validation:Enum=TCP;UDP
-	Protocol string `json:"protocol"`
+// ChallengeHint defines the desired state of a hint
+type ChallengeHint struct {
+	Content      string                 `json:"content,omitempty"`
+	Cost         int                    `json:"cost"`
+	Requirements *ChallengeRequirements `json:"requirements,omitempty"`
 }
 
-// ChallengeExposedPort defines the desired state of ChallengeExposedPort
-type ChallengeExposedPort struct {
-	// +kubebuilder:validation:Minimum=1
-	// +kubebuilder:validation:Maximum=65535
-	// +kubebuilder:validation:Required
-	Port int `json:"port"`
+// ChallengeRequirements defines the desired state of a requirement
+type ChallengeRequirements struct {
+	// Anonymize control the behavior of the resource if the prerequisites are
+	// not validated:
+	//  - if `nil`, defaults to `*false`
+	//  - if `*false`, set the behavior as "hidden" (invisible until validated)
+	//  - if `*true`, set the behavior to "anonymized" (visible but not much info)
+	Anonymize *bool `json:"anonymize,omitempty"`
 
-	// +kubebuilder:validation:Enum=tcp;http
-	Kind string `json:"kind"`
-
-	// +kubebuilder:validation:Required
-	Pod string `json:"pod"`
-}
-
-// ChallengePod defines the desired state of ChallengePod
-type ChallengePod struct {
-	// +kubebuilder:validation:Required
-	Name string `json:"name"`
-
-	// +kubebuilder:validation:MinItems=1
-	// +kubebuilder:validation:Required
-	Ports []ChallengePodPort `json:"ports"`
-
-	Egress bool `json:"egress"`
-
-	// +kubebuilder:validation:Required
-	Spec v1.PodSpec `json:"spec"`
+	// Prerequisites is the list of resources' ID that need to be validated in
+	// order for the resource to meet its requirements.
+	Prerequisites []int `json:"prerequisites"`
 }
 
 // ChallengeSpec defines the desired state of Challenge
@@ -68,17 +48,55 @@ type ChallengeSpec struct {
 	Name string `json:"name"`
 
 	// +kubebuilder:validation:Required
-	// Timeout in seconds, after which the challenge is deleted
-	Timeout int `json:"timeout"`
+	// Name of the challenge
+	Category string `json:"category"`
 
-	// +kubebuilder:validation:MinItems=1
 	// +kubebuilder:validation:Required
-	ExposedPorts []ChallengeExposedPort `json:"exposedPorts"`
+	// Description of the challenge
+	Description string `json:"description"`
 
-	// +kubebuilder:validation:MinItems=1
+	// +kubebuilder:validation:Optional
+	Value int `json:"value"`
+
+	// +kubebuilder:validation:Optional
+	Initial *int `json:"initial_value"`
+
+	// +kubebuilder:validation:Optional
+	Decay *int `json:"value_decay"`
+
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:validation:Enum=linear;logarithmic
+	DecayFunction string `json:"decay_function"`
+
+	// +kubebuilder:validation:Optional
+	Minimum *int `json:"minimum_value"`
+
+	// +kubebuilder:validation:Optional
+	MaxAttempts *int `json:"max_attempts"`
+
 	// +kubebuilder:validation:Required
-	// Pods to deploy for the challenge
-	Pods []ChallengePod `json:"pods"`
+	// +kubebuilder:validation:Enum=visible;hidden
+	State string `json:"state"`
+
+	// +kubebuilder:validation:Optional
+	// Hints of the challenge
+	Hints []ChallengeHint `json:"hints"`
+
+	// +kubebuilder:validation:Optional
+	// Requirements of the challenge
+	Requirements ChallengeRequirements `json:"requirements"`
+
+	// +kubebuilder:validation:Optional
+	// Next challenge
+	NextID *int `json:"next_id"`
+
+	// +kubebuilder:validation:Required
+	// Flag of this challenge
+	Flag string `json:"flag"`
+
+	// +kubebuilder:validation:Required
+	// Type of the challenge
+	Type string `json:"type"`
 }
 
 // +kubebuilder:object:root=true

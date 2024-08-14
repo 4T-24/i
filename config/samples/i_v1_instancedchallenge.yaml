@@ -1,17 +1,19 @@
 apiVersion: i.4ts.fr/v1
-kind: OracleChallenge
+kind: InstancedChallenge
 metadata:
   labels:
     app.kubernetes.io/name: atsi
     app.kubernetes.io/managed-by: kustomize
-  name: oraclechallenge-sample
+  name: challenge-sample
 spec:
   name: Test Challenge
-  timeout: 10000
+  timeout: 6000
   pods:
     - name: app
       ports:
         - port: 80
+          protocol: TCP
+      egress: false
       spec:
         containers:
           - name: main
@@ -25,10 +27,6 @@ spec:
                 cpu: 100m
         automountServiceAccountToken: false
   exposedPorts:
-    - kind: http
+    - kind: tcp
       pod: app
       port: 80
-  oraclePort:
-    route: /
-    pod: app
-    port: 80

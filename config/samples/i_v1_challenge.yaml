@@ -6,27 +6,23 @@ metadata:
     app.kubernetes.io/managed-by: kustomize
   name: challenge-sample
 spec:
+  id: 1
   name: Test Challenge
-  timeout: 6000
-  pods:
-    - name: app
-      ports:
-        - port: 80
-          protocol: TCP
-      egress: false
-      spec:
-        containers:
-          - name: main
-            image: traefik/whoami:latest
-            resources:
-              requests:
-                memory: 100Mi
-                cpu: 75m
-              limits:
-                memory: 250Mi
-                cpu: 100m
-        automountServiceAccountToken: false
-  exposedPorts:
-    - kind: tcp
-      pod: app
-      port: 80
+  category: Test
+  description: |
+    This a test challenge
+    Multiline string
+    And a [link](https://www.google.com)
+  initial_value: 50
+  value_decay: 2
+  minimum_value: 10
+  max_attempts: 3
+  decay_function: linear
+  state: visible
+  hints:
+    - content: This is a free hint
+      cost: 0
+    - content: This is a hint
+      cost: 10
+  flag: 'flag{test}'
+  type: dynamic

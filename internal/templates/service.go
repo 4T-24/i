@@ -12,7 +12,7 @@ type ServiceParams struct {
 	Name         string
 	Namespace    string
 	CommonLabels map[string]string
-	Ports        []v1.ChallengePodPort
+	Ports        []v1.InstancedChallengePodPort
 }
 
 // apiVersion: v1

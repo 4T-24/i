@@ -20,8 +20,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// ChallengeOraclePodPort defines the desired state of ChallengeOraclePodPort
-type ChallengeOraclePodPort struct {
+// InstancedChallengeOraclePodPort defines the desired state of InstancedChallengeOraclePodPort
+type InstancedChallengeOraclePodPort struct {
 	// +kubebuilder:validation:Minimum=1
 	// +kubebuilder:validation:Maximum=65535
 	// +kubebuilder:validation:Required
@@ -35,33 +35,33 @@ type ChallengeOraclePodPort struct {
 	Route string `json:"route"`
 }
 
-// OracleChallengeSpec defines the desired state of OracleChallenge
-type OracleChallengeSpec struct {
-	ChallengeSpec `json:""`
+// OracleInstancedChallengeSpec defines the desired state of OracleChallenge
+type OracleInstancedChallengeSpec struct {
+	InstancedChallengeSpec `json:""`
 
 	// +kubebuilder:validation:Required
-	OraclePort ChallengeOraclePodPort `json:"oraclePort"`
+	OraclePort InstancedChallengeOraclePodPort `json:"oraclePort"`
 }
 
 // +kubebuilder:object:root=true
 
-// OracleChallenge is the Schema for the oraclechallenges API
-type OracleChallenge struct {
+// OracleInstancedChallenge is the Schema for the oraclechallenges API
+type OracleInstancedChallenge struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec OracleChallengeSpec `json:"spec,omitempty"`
+	Spec OracleInstancedChallengeSpec `json:"spec,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 
-// OracleChallengeList contains a list of OracleChallenge
-type OracleChallengeList struct {
+// OracleInstancedChallengeList contains a list of OracleChallenge
+type OracleInstancedChallengeList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []OracleChallenge `json:"items"`
+	Items           []OracleInstancedChallenge `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&OracleChallenge{}, &OracleChallengeList{})
+	SchemeBuilder.Register(&OracleInstancedChallenge{}, &OracleInstancedChallengeList{})
 }

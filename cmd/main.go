@@ -5,6 +5,7 @@ import (
 	"flag"
 	v1 "instancer/api/v1"
 	"instancer/internal/controllers"
+	"instancer/internal/ctf"
 	"instancer/internal/env"
 	"instancer/web"
 	"os"
@@ -104,12 +105,13 @@ func main() {
 	}
 
 	reconciler := &controllers.InstancierReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
+		Client:    mgr.GetClient(),
+		Scheme:    mgr.GetScheme(),
+		CtfClient: ctf.New(),
 	}
 
 	if err = reconciler.SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "SSHRoute")
+		setupLog.Error(err, "unable to create controller", "controller", "Instancier")
 		os.Exit(1)
 	}
 

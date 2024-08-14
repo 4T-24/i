@@ -4,14 +4,14 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.15.0
-  name: oraclechallenges.i.4ts.fr
+  name: instancedchallenges.i.4ts.fr
 spec:
   group: i.4ts.fr
   names:
-    kind: OracleChallenge
-    listKind: OracleChallengeList
-    plural: oraclechallenges
-    singular: oraclechallenge
+    kind: InstancedChallenge
+    listKind: InstancedChallengeList
+    plural: instancedchallenges
+    singular: instancedchallenge
   scope: Namespaced
   versions:
   - name: v1
@@ -26,6 +26,15 @@ spec:
             type: object
           spec:
             properties:
+              category:
+                type: string
+              decay_function:
+                enum:
+                - linear
+                - logarithmic
+                type: string
+              description:
+                type: string
               exposedPorts:
                 items:
                   properties:
@@ -47,24 +56,42 @@ spec:
                   type: object
                 minItems: 1
                 type: array
+              flag:
+                type: string
+              hints:
+                items:
+                  properties:
+                    content:
+                      type: string
+                    cost:
+                      type: integer
+                    requirements:
+                      properties:
+                        anonymize:
+                          type: boolean
+                        prerequisites:
+                          items:
+                            type: integer
+                          type: array
+                      required:
+                      - prerequisites
+                      type: object
+                  required:
+                  - cost
+                  type: object
+                type: array
+              id:
+                type: integer
+              initial_value:
+                type: integer
+              max_attempts:
+                type: integer
+              minimum_value:
+                type: integer
               name:
                 type: string
-              oraclePort:
-                properties:
-                  pod:
-                    type: string
-                  port:
-                    maximum: 65535
-                    minimum: 1
-                    type: integer
-                  route:
-                    default: /is_solved
-                    type: string
-                required:
-                - pod
-                - port
-                - route
-                type: object
+              next_id:
+                type: integer
               pods:
                 items:
                   properties:
@@ -3657,14 +3684,41 @@ spec:
                   type: object
                 minItems: 1
                 type: array
+              requirements:
+                properties:
+                  anonymize:
+                    type: boolean
+                  prerequisites:
+                    items:
+                      type: integer
+                    type: array
+                required:
+                - prerequisites
+                type: object
+              state:
+                enum:
+                - visible
+                - hidden
+                type: string
               timeout:
                 type: integer
+              type:
+                type: string
+              value:
+                type: integer
+              value_decay:
+                type: integer
             required:
+            - category
+            - description
             - exposedPorts
+            - flag
+            - id
             - name
-            - oraclePort
             - pods
+            - state
             - timeout
+            - type
             type: object
         type: object
     served: true

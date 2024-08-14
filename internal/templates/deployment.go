@@ -1,6 +1,8 @@
 package templates
 
 import (
+	"instancer/internal/utils"
+
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -34,10 +36,6 @@ type DeploymentParams struct {
 //     spec:
 //       {{  asYaml .Spec 4 }}
 
-func Optional[K any](k K) *K {
-	return &k
-}
-
 func NewDeployment(p *DeploymentParams) *apps.Deployment {
 	var labels = p.CommonLabels
 	labels["i.4ts.fr/pod"] = p.Name
@@ -52,7 +50,7 @@ func NewDeployment(p *DeploymentParams) *apps.Deployment {
 			},
 		},
 		Spec: apps.DeploymentSpec{
-			Replicas: Optional(int32(1)),
+			Replicas: utils.Optional(int32(1)),
 			Selector: &v1.LabelSelector{
 				MatchLabels: labels,
 			},

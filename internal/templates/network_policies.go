@@ -2,6 +2,7 @@ package templates
 
 import (
 	v1 "instancer/api/v1"
+	"instancer/internal/utils"
 
 	core "k8s.io/api/core/v1"
 	networking "k8s.io/api/networking/v1"
@@ -82,7 +83,7 @@ import (
 type NetworkPolicyParams struct {
 	Namespace    string            // Namespace of the NetworkPolicy
 	CommonLabels map[string]string // Common labels for namespace selectors
-	Pods         []v1.ChallengePod
+	Pods         []v1.InstancedChallengePod
 }
 
 func NewNetworkPolicy(p *NetworkPolicyParams) []*networking.NetworkPolicy {
@@ -132,8 +133,8 @@ func NewNetworkPolicy(p *NetworkPolicyParams) []*networking.NetworkPolicy {
 					},
 					Ports: []networking.NetworkPolicyPort{
 						{
-							Protocol: Optional(core.ProtocolUDP),
-							Port:     Optional(intstr.FromInt32(53)),
+							Protocol: utils.Optional(core.ProtocolUDP),
+							Port:     utils.Optional(intstr.FromInt32(53)),
 						},
 					},
 				},
