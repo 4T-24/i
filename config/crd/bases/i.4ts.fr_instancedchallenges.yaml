@@ -80,8 +80,6 @@ spec:
                   - cost
                   type: object
                 type: array
-              id:
-                type: integer
               initial_value:
                 type: integer
               max_attempts:
@@ -3713,7 +3711,6 @@ spec:
             - description
             - exposedPorts
             - flag
-            - id
             - name
             - pods
             - state
