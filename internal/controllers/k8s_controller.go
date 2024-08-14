@@ -44,7 +44,7 @@ func (r *InstancierReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 	// Init map if not init
 	if !r.init {
-		r.Init()
+		r.Reinit()
 	}
 
 	// Register the challenge onto CTFd
@@ -84,10 +84,14 @@ func (r *InstancierReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		return ctrl.Result{}, nil
 	}
 
-	return ctrl.Result{}, err
+	logrus.WithField("name", req.Name).Warn("Ressource deleted, rechecking")
+	r.Reinit()
+
+	return ctrl.Result{}, nil
 }
 
 func (r *InstancierReconciler) ReconcileCTFd() {
+	logrus.Info("Reconciling CTFd")
 	err := r.CtfClient.ReconcileChallenge(r.ctfdChallenges)
 	if err != nil {
 		logrus.WithError(err).Error("Failed to reconcile CTFd")
@@ -95,15 +99,16 @@ func (r *InstancierReconciler) ReconcileCTFd() {
 	}
 }
 
-// Init is the first run
-func (r *InstancierReconciler) Init() {
+// Reinit is the first run
+func (r *InstancierReconciler) Reinit() {
 	r.challenges = make(map[string]client.Object)
+	r.ctfdChallenges = make([]*v1.ChallengeSpec, 0)
 	r.tasks = make(map[string]chrono.ScheduledTask)
 
 	r.TaskScheduler = chrono.NewDefaultTaskScheduler()
 
-	var challenges v1.InstancedChallengeList
-	err := r.List(context.Background(), &challenges, client.InNamespace("default"))
+	var challenges v1.ChallengeList
+	err := r.List(context.Background(), &challenges)
 	if err != nil {
 		panic(err)
 	}
@@ -112,18 +117,30 @@ func (r *InstancierReconciler) Init() {
 		r.RegisterChallenge(&challenge)
 	}
 
-	var oraclechallenges v1.OracleInstancedChallengeList
-	err = r.List(context.Background(), &oraclechallenges, client.InNamespace("default"))
+	var instancedChallenges v1.InstancedChallengeList
+	err = r.List(context.Background(), &instancedChallenges, client.InNamespace("default"))
 	if err != nil {
 		panic(err)
 	}
 
-	for _, challenge := range oraclechallenges.Items {
+	for _, challenge := range instancedChallenges.Items {
 		r.RegisterChallenge(&challenge)
 	}
 
+	var oracleInstancedChallenges v1.OracleInstancedChallengeList
+	err = r.List(context.Background(), &oracleInstancedChallenges, client.InNamespace("default"))
+	if err != nil {
+		panic(err)
+	}
+
+	for _, challenge := range oracleInstancedChallenges.Items {
+		r.RegisterChallenge(&challenge)
+	}
+
+	if !r.init {
+		logrus.Info("Init successful")
+	}
 	r.init = true
-	logrus.Info("Init successful")
 }
 
 // SetupWithManager sets up the controller with the Manager.

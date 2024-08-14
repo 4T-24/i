@@ -9,12 +9,27 @@ import (
 func (r *InstancierReconciler) RegisterChallenge(obj client.Object) {
 	switch c := obj.(type) {
 	case *v1.Challenge:
+		for _, challenge := range r.ctfdChallenges {
+			if challenge.Name == c.Spec.Name {
+				return
+			}
+		}
 		r.ctfdChallenges = append(r.ctfdChallenges, &c.Spec)
 	case *v1.InstancedChallenge:
 		r.challenges[c.Name] = c
+		for _, challenge := range r.ctfdChallenges {
+			if challenge.Name == c.Spec.Name {
+				return
+			}
+		}
 		r.ctfdChallenges = append(r.ctfdChallenges, &c.Spec.ChallengeSpec)
 	case *v1.OracleInstancedChallenge:
 		r.challenges[c.Name] = c
+		for _, challenge := range r.ctfdChallenges {
+			if challenge.Name == c.Spec.Name {
+				return
+			}
+		}
 		r.ctfdChallenges = append(r.ctfdChallenges, &c.Spec.ChallengeSpec)
 	}
 }

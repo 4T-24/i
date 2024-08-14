@@ -6,9 +6,8 @@ metadata:
     app.kubernetes.io/managed-by: kustomize
   name: challenge-sample
 spec:
-  id: 1
   name: Test Challenge
-  category: Test
+  category: Test22
   description: |
     This a test challenge
     Multiline string
