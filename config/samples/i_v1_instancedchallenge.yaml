@@ -7,6 +7,24 @@ metadata:
   name: challenge-sample
 spec:
   name: Test Challenge
+  category: Test22
+  description: |
+    This a test challenge
+    Multiline string
+    And a [link](https://www.google.com)
+  initial_value: 50
+  value_decay: 2
+  minimum_value: 10
+  max_attempts: 3
+  decay_function: linear
+  state: visible
+  hints:
+    - content: This is a free hint
+      cost: 0
+    - content: This is a hint
+      cost: 10
+  flag: 'flag{test}'
+  type: dynamic
   timeout: 6000
   pods:
     - name: app
