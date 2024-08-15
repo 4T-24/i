@@ -23,8 +23,8 @@ spec:
       cost: 0
     - content: This is a hint
       cost: 10
-      requirements:
-        prerequisites: [ 0 ]
+      # requirements:
+      #   prerequisites: [ 0 ]
   flag: 'flag{test}'
   type: i_dynamic
   requirements:
