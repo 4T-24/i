@@ -3,8 +3,10 @@ package ctf
 import (
 	"fmt"
 	v1 "instancer/api/v1"
+	"instancer/internal/utils"
 
 	"github.com/ctfer-io/go-ctfd/api"
+	"github.com/sirupsen/logrus"
 )
 
 func (c *Client) ReconcileRequirements(challenges map[string]*v1.ChallengeSpec) error {
@@ -111,6 +113,32 @@ func (c *Client) ReconcileRequirements(challenges map[string]*v1.ChallengeSpec) 
 			})
 
 		}
+	}
+
+	for _, challenge := range challenges {
+		apiChallenge, found := mappedApiChallenges[challenge.Slug]
+		if !found {
+			return fmt.Errorf("challenge %s does not exist", challenge.Name)
+		}
+
+		var nextId *int
+		nextChallenge, found := mappedApiChallenges[challenge.NextSlug]
+		if !found {
+			if challenge.NextSlug != "" {
+				logrus.WithField("slug", challenge.NextSlug).Warn("next challenge does not exist")
+			}
+			continue
+		}
+		nextId = utils.Optional(nextChallenge.ID)
+
+		c.PatchChallenge(apiChallenge.ID, &api.PatchChallengeParams{
+			Name:        apiChallenge.Name,
+			Category:    apiChallenge.Category,
+			Description: apiChallenge.Description,
+			Function:    apiChallenge.Function,
+			State:       apiChallenge.State,
+			NextID:      nextId,
+		})
 	}
 
 	return nil

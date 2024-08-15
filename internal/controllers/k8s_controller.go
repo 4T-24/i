@@ -91,7 +91,7 @@ func (r *InstancierReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 }
 
 func (r *InstancierReconciler) ReconcileCTFd() {
-	logrus.Info("Reconciling CTFd")
+	logrus.WithField("challenges", len(r.ctfdChallenges)).Info("Reconciling CTFd with challenges")
 	err := r.CtfClient.ReconcileChallenge(r.ctfdChallenges)
 	if err != nil {
 		logrus.WithError(err).Error("Failed to reconcile CTFd")

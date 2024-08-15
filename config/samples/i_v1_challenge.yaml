@@ -25,3 +25,4 @@ spec:
       cost: 10
   flag: 'flag{test}'
   type: i_dynamic
+  next_slug: challenge-sample-2
