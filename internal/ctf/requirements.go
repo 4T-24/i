@@ -30,10 +30,6 @@ func (c *Client) ReconcileRequirements(challenges map[string]*v1.ChallengeSpec) 
 	}
 
 	for _, challenge := range challenges {
-		if len(challenge.Requirements.Prerequisites) == 0 {
-			continue
-		}
-
 		apiChallenge, found := mappedApiChallenges[challenge.Slug]
 		if !found {
 			return fmt.Errorf("challenge %s does not exist", challenge.Name)
