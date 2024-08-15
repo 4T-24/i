@@ -37,7 +37,8 @@ type InstancierReconciler struct {
 //+kubebuilder:rbac:groups=networking.k8s.io,resources=networkpolicies,verbs=create;delete
 //+kubebuilder:rbac:groups=voyager.appscode.com,resources=ingress,verbs=create;delete
 //+kubebuilder:rbac:groups=i.4ts.fr,resources=challenges,verbs=get;list;watch
-//+kubebuilder:rbac:groups=i.4ts.fr,resources=oraclechallenges,verbs=get;list;watch
+//+kubebuilder:rbac:groups=i.4ts.fr,resources=instancedchallenges,verbs=get;list;watch
+//+kubebuilder:rbac:groups=i.4ts.fr,resources=oracleinstancedchallenges,verbs=get;list;watch
 
 func (r *InstancierReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = log.FromContext(ctx)

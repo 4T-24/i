@@ -38,7 +38,7 @@ spec:
         args:
           - --leader-elect
           - --health-probe-bind-address=:8081
-        image: controller:latest
+        image: ghcr.io/4t-24/i:main
         name: manager
         envFrom:
         - configMapRef:

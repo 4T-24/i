@@ -39,7 +39,15 @@ rules:
 - apiGroups:
   - i.4ts.fr
   resources:
-  - oraclechallenges
+  - instancedchallenges
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - i.4ts.fr
+  resources:
+  - oracleinstancedchallenges
   verbs:
   - get
   - list
