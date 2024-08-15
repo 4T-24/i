@@ -39,6 +39,7 @@ spec:
           - --leader-elect
           - --health-probe-bind-address=:8081
         image: ghcr.io/4t-24/i:main
+        imagePullPolicy: Always
         name: manager
         envFrom:
         - configMapRef:
