@@ -32,10 +32,10 @@ func (r *InstancierReconciler) GetDeployment(pod, namespace string) (*v1.Deploym
 	return deployment, err
 }
 
-func (r *InstancierReconciler) GetServer(challengeId, instanceId, pod, kind string) InstanceServers {
+func (r *InstancierReconciler) GetServer(challengeId, id, pod, kind string) InstanceServers {
 	s := InstanceServers{
 		Kind: kind,
-		Host: names.GetHost(pod, challengeId, instanceId),
+		Host: names.GetHost(pod, challengeId, id),
 	}
 
 	if kind == "tcp" {

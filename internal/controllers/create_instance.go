@@ -91,7 +91,7 @@ func (r *InstancierReconciler) CreateInstance(challengeId, instanceId string) (*
 			Namespace: namespace,
 			Kind:      port.Kind,
 			Host: templates.IngressHost{
-				Host:        names.GetHost(port.Pod, challengeId, instanceId),
+				Host:        names.GetHost(port.Pod, challengeId, id),
 				ServiceName: port.Pod,
 				ServicePort: port.Port,
 			},

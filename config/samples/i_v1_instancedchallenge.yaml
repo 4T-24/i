@@ -10,7 +10,9 @@ spec:
   category: Test22
   description: |
     This a test challenge
+    
     Multiline string
+    
     And a [link](https://www.google.com)
   initial_value: 50
   value_decay: 2
@@ -45,6 +47,6 @@ spec:
                 cpu: 100m
         automountServiceAccountToken: false
   exposedPorts:
-    - kind: tcp
+    - kind: http
       pod: app
       port: 80

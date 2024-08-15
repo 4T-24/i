@@ -4,6 +4,10 @@ import (
 	"context"
 	v1 "instancer/api/v1"
 	"instancer/internal/ctf"
+	"strconv"
+	"time"
+
+	core "k8s.io/api/core/v1"
 
 	"codnect.io/chrono"
 	"github.com/sirupsen/logrus"
@@ -138,6 +142,36 @@ func (r *InstancierReconciler) Reinit() {
 		r.RegisterChallenge(&challenge)
 	}
 
+	// Get all namespaces
+	var namespaces core.NamespaceList
+	err = r.List(context.Background(), &namespaces)
+	if err != nil {
+		panic(err)
+	}
+
+	for _, namespace := range namespaces.Items {
+		if by, found := namespace.Labels["app.kubernetes.io/managed-by"]; found && by == "atsi" {
+			ttl := namespace.Labels["i.4ts.fr/ttl"]
+			if ttl == "" {
+				logrus.WithField("namespace", namespace.Name).Warn("No TTL found")
+				continue
+			}
+
+			ttlI, err := strconv.Atoi(ttl)
+			if err != nil {
+				logrus.WithError(err).WithField("namespace", namespace.Name).Warn("Failed to parse TTL")
+				continue
+			}
+
+			task, err := r.Schedule(func(ctx context.Context) {
+				r.DeleteInstance(namespace.Labels["i.4ts.fr/challenge"], namespace.Labels["i.4ts.fr/instance"])
+			}, chrono.WithTime(namespace.CreationTimestamp.Time.Add(time.Duration(ttlI)*time.Second)))
+			if err == nil {
+				r.tasks[namespace.Name] = task
+			}
+		}
+	}
+
 	if !r.init {
 		logrus.Info("Init successful")
 	}
@@ -146,10 +180,14 @@ func (r *InstancierReconciler) Reinit() {
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *InstancierReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewControllerManagedBy(mgr).
-		Owns(&v1.InstancedChallenge{}, builder.WithPredicates(predicates())).
-		Owns(&v1.OracleInstancedChallenge{}, builder.WithPredicates(predicates())).
+	ctrl.NewControllerManagedBy(mgr).
 		For(&v1.Challenge{}, builder.WithPredicates(predicates())).
+		Complete(r)
+	ctrl.NewControllerManagedBy(mgr).
+		For(&v1.InstancedChallenge{}, builder.WithPredicates(predicates())).
+		Complete(r)
+	return ctrl.NewControllerManagedBy(mgr).
+		For(&v1.OracleInstancedChallenge{}, builder.WithPredicates(predicates())).
 		Complete(r)
 }
 

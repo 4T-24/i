@@ -92,7 +92,9 @@ func (c *Client) PostCustomChallenge(challenge *v1.ChallengeSpec) (*api.Challeng
 	var apiChallenge api.Challenge
 
 	body, err := json.Marshal(&CustomPostChallengeParams{
-		Slug: challenge.Slug,
+		Slug:        challenge.Slug,
+		IsInstanced: challenge.IsInstanced,
+		HasOracle:   challenge.HasOracle,
 		PostChallengesParams: api.PostChallengesParams{
 			Name:        challenge.Name,
 			Category:    challenge.Category,
@@ -130,6 +132,8 @@ func (c *Client) PatchCustomChallenge(id int, challenge *v1.ChallengeSpec) (*api
 
 	params := &CustomPatchChallengeParams{
 		Slug:        challenge.Slug,
+		IsInstanced: challenge.IsInstanced,
+		HasOracle:   challenge.HasOracle,
 		Name:        challenge.Name,
 		Category:    challenge.Category,
 		Description: challenge.Description,
