@@ -4,15 +4,15 @@ metadata:
   labels:
     app.kubernetes.io/name: atsi
     app.kubernetes.io/managed-by: kustomize
-  name: challenge-sample
+  name: challenge-sample-2
 spec:
-  name: Test Challenge Custom
+  name: Test Challenge Custom Part 2
   category: Test
   description: |
     This a test challenge
     Multiline string
     And a [link](https://www.google.com)
-  initial_value: 50
+  initial_value: 75
   value_decay: 2
   minimum_value: 10
   max_attempts: 3
@@ -23,5 +23,10 @@ spec:
       cost: 0
     - content: This is a hint
       cost: 10
+      requirements:
+        prerequisites: [ 0 ]
   flag: 'flag{test}'
   type: i_dynamic
+  requirements:
+    prerequisites:
+      - challenge-sample

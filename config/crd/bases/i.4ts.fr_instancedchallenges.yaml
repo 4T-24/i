@@ -88,8 +88,8 @@ spec:
                 type: integer
               name:
                 type: string
-              next_id:
-                type: integer
+              next_slug:
+                type: string
               pods:
                 items:
                   properties:
@@ -3688,7 +3688,7 @@ spec:
                     type: boolean
                   prerequisites:
                     items:
-                      type: integer
+                      type: string
                     type: array
                 required:
                 - prerequisites
@@ -3701,6 +3701,9 @@ spec:
               timeout:
                 type: integer
               type:
+                enum:
+                - i_static
+                - i_dynamic
                 type: string
               value:
                 type: integer

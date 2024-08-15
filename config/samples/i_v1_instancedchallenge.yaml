@@ -24,7 +24,7 @@ spec:
     - content: This is a hint
       cost: 10
   flag: 'flag{test}'
-  type: dynamic
+  type: i_dynamic
   timeout: 6000
   pods:
     - name: app

@@ -88,8 +88,8 @@ spec:
                 type: integer
               name:
                 type: string
-              next_id:
-                type: integer
+              next_slug:
+                type: string
               oraclePort:
                 properties:
                   pod:
@@ -3704,7 +3704,7 @@ spec:
                     type: boolean
                   prerequisites:
                     items:
-                      type: integer
+                      type: string
                     type: array
                 required:
                 - prerequisites
@@ -3717,6 +3717,9 @@ spec:
               timeout:
                 type: integer
               type:
+                enum:
+                - i_static
+                - i_dynamic
                 type: string
               value:
                 type: integer

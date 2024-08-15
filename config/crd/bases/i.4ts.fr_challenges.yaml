@@ -67,15 +67,15 @@ spec:
                 type: integer
               name:
                 type: string
-              next_id:
-                type: integer
+              next_slug:
+                type: string
               requirements:
                 properties:
                   anonymize:
                     type: boolean
                   prerequisites:
                     items:
-                      type: integer
+                      type: string
                     type: array
                 required:
                 - prerequisites
@@ -86,6 +86,9 @@ spec:
                 - hidden
                 type: string
               type:
+                enum:
+                - i_static
+                - i_dynamic
                 type: string
               value:
                 type: integer

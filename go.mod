@@ -3,7 +3,9 @@ module instancer
 go 1.22.2
 
 require (
+	codnect.io/chrono v1.1.3
 	github.com/caarlos0/env/v10 v10.0.0
+	github.com/ctfer-io/go-ctfd v0.9.0
 	github.com/emissary-ingress/emissary/v3 v3.9.1
 	github.com/go-fuego/fuego v0.14.0
 	github.com/joho/godotenv v1.5.1
@@ -15,13 +17,11 @@ require (
 )
 
 require (
-	codnect.io/chrono v1.1.3 // indirect
 	github.com/antlr/antlr4/runtime/Go/antlr/v4 v4.0.0-20230305170008-8188dc5388df // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/blang/semver/v4 v4.0.0 // indirect
 	github.com/cenkalti/backoff/v4 v4.2.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
-	github.com/ctfer-io/go-ctfd v0.9.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/emicklei/go-restful/v3 v3.11.0 // indirect
 	github.com/evanphx/json-patch/v5 v5.9.0 // indirect

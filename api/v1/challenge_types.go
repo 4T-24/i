@@ -13,9 +13,23 @@ import (
 
 // ChallengeHint defines the desired state of a hint
 type ChallengeHint struct {
-	Content      string                 `json:"content,omitempty"`
-	Cost         int                    `json:"cost"`
-	Requirements *ChallengeRequirements `json:"requirements,omitempty"`
+	Content      string            `json:"content,omitempty"`
+	Cost         int               `json:"cost"`
+	Requirements *HintRequirements `json:"requirements,omitempty"`
+}
+
+// HintRequirements defines the desired state of a requirement
+type HintRequirements struct {
+	// Anonymize control the behavior of the resource if the prerequisites are
+	// not validated:
+	//  - if `nil`, defaults to `*false`
+	//  - if `*false`, set the behavior as "hidden" (invisible until validated)
+	//  - if `*true`, set the behavior to "anonymized" (visible but not much info)
+	Anonymize *bool `json:"anonymize,omitempty"`
+
+	// Prerequisites is the list of resources' slug or name that need to be validated in
+	// order for the resource to meet its requirements.
+	Prerequisites []int `json:"prerequisites"`
 }
 
 // ChallengeRequirements defines the desired state of a requirement
@@ -27,9 +41,9 @@ type ChallengeRequirements struct {
 	//  - if `*true`, set the behavior to "anonymized" (visible but not much info)
 	Anonymize *bool `json:"anonymize,omitempty"`
 
-	// Prerequisites is the list of resources' ID that need to be validated in
+	// Prerequisites is the list of resources' slug or name that need to be validated in
 	// order for the resource to meet its requirements.
-	Prerequisites []int `json:"prerequisites"`
+	Prerequisites []string `json:"prerequisites"`
 }
 
 // ChallengeSpec defines the desired state of Challenge
@@ -79,15 +93,21 @@ type ChallengeSpec struct {
 
 	// +kubebuilder:validation:Optional
 	// Next challenge
-	NextID *int `json:"next_id"`
+	NextSlug string `json:"next_slug"`
 
 	// +kubebuilder:validation:Required
 	// Flag of this challenge
 	Flag string `json:"flag"`
 
 	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:Enum=i_static;i_dynamic
 	// Type of the challenge
 	Type string `json:"type"`
+
+	// Field for later use
+	Slug        string `json:"-"`
+	IsInstanced bool   `json:"-"`
+	HasOracle   bool   `json:"-"`
 }
 
 // +kubebuilder:object:root=true

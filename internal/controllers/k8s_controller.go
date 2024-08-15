@@ -23,7 +23,7 @@ type InstancierReconciler struct {
 	init bool
 
 	challenges     map[string]client.Object
-	ctfdChallenges []*v1.ChallengeSpec
+	ctfdChallenges map[string]*v1.ChallengeSpec
 
 	CtfClient *ctf.Client
 
@@ -102,7 +102,7 @@ func (r *InstancierReconciler) ReconcileCTFd() {
 // Reinit is the first run
 func (r *InstancierReconciler) Reinit() {
 	r.challenges = make(map[string]client.Object)
-	r.ctfdChallenges = make([]*v1.ChallengeSpec, 0)
+	r.ctfdChallenges = make(map[string]*v1.ChallengeSpec)
 	r.tasks = make(map[string]chrono.ScheduledTask)
 
 	r.TaskScheduler = chrono.NewDefaultTaskScheduler()
