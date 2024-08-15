@@ -75,8 +75,8 @@ func (c *Client) ReconcileRequirements(challenges map[string]*v1.ChallengeSpec) 
 		}
 
 		for _, hint := range challenge.Hints {
-			if hint.Requirements == nil || len(hint.Requirements.Prerequisites) == 0 {
-				continue
+			if hint.Requirements == nil {
+				hint.Requirements = &v1.HintRequirements{}
 			}
 
 			apiHint, found := mappedApiHints[hint.Content]
@@ -99,22 +99,14 @@ func (c *Client) ReconcileRequirements(challenges map[string]*v1.ChallengeSpec) 
 				prerequisites = append(prerequisites, prerequisiteHint.ID)
 			}
 
-			if len(prerequisites) == 0 {
-				c.PatchHint(fmt.Sprint(apiHint.ID), &api.PatchHintsParams{
-					ChallengeID: apiChallenge.ID,
-					Content:     hint.Content,
-					Cost:        hint.Cost,
-				})
-			} else {
-				c.PatchHint(fmt.Sprint(apiHint.ID), &api.PatchHintsParams{
-					ChallengeID: apiChallenge.ID,
-					Content:     hint.Content,
-					Cost:        hint.Cost,
-					Requirements: api.Requirements{
-						Prerequisites: prerequisites,
-					},
-				})
-			}
+			c.PatchHint(fmt.Sprint(apiHint.ID), &api.PatchHintsParams{
+				ChallengeID: apiChallenge.ID,
+				Content:     hint.Content,
+				Cost:        hint.Cost,
+				Requirements: api.Requirements{
+					Prerequisites: prerequisites,
+				},
+			})
 		}
 	}
 
