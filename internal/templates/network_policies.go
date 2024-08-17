@@ -168,7 +168,7 @@ func NewNetworkPolicy(p *NetworkPolicyParams) []*networking.NetworkPolicy {
 								},
 								PodSelector: &meta.LabelSelector{
 									MatchLabels: map[string]string{
-										"app.kubernetes.io/name": "emissary-ingress-agent",
+										"app.kubernetes.io/instance": "emissary-ingress",
 									},
 								},
 							},
