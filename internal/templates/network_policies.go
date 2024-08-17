@@ -55,10 +55,10 @@ import (
 //     - from:
 //       - namespaceSelector:
 //           matchLabels:
-//             kubernetes.io/metadata.name: voyager
+//             kubernetes.io/metadata.name: emissary
 //       - podSelector:
 //           matchLabels:
-//             app.kubernetes.io/name: voyager
+//              app.kubernetes.io/instance: emissary-ingress
 // ---
 // apiVersion: networking.k8s.io/v1
 // kind: NetworkPolicy
@@ -163,12 +163,12 @@ func NewNetworkPolicy(p *NetworkPolicyParams) []*networking.NetworkPolicy {
 							{
 								NamespaceSelector: &meta.LabelSelector{
 									MatchLabels: map[string]string{
-										"kubernetes.io/metadata.name": "voyager",
+										"kubernetes.io/metadata.name": "emissary",
 									},
 								},
 								PodSelector: &meta.LabelSelector{
 									MatchLabels: map[string]string{
-										"kubernetes.io/metadata.name": "voyager",
+										"app.kubernetes.io/name": "emissary-ingress-agent",
 									},
 								},
 							},

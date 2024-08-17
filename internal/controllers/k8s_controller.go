@@ -35,11 +35,12 @@ type InstancierReconciler struct {
 	tasks map[string]chrono.ScheduledTask
 }
 
-//+kubebuilder:rbac:groups="",resources=namespaces,verbs=get;list;create;delete
-//+kubebuilder:rbac:groups="",resources=services,verbs=create;delete
-//+kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;create;delete
+//+kubebuilder:rbac:groups="",resources=namespaces,verbs=get;list;create;delete;watch
+//+kubebuilder:rbac:groups="",resources=services,verbs=create;delete;watch
+//+kubebuilder:rbac:groups=apps,resources=deployments,verbs=list;get;create;delete;watch
 //+kubebuilder:rbac:groups=networking.k8s.io,resources=networkpolicies,verbs=create;delete
-//+kubebuilder:rbac:groups=voyager.appscode.com,resources=ingress,verbs=create;delete
+//+kubebuilder:rbac:groups=getambassador.io,resources=mappings,verbs=create;delete
+//+kubebuilder:rbac:groups=getambassador.io,resources=tcpmappings,verbs=create;delete
 //+kubebuilder:rbac:groups=i.4ts.fr,resources=challenges,verbs=get;list;watch
 //+kubebuilder:rbac:groups=i.4ts.fr,resources=instancedchallenges,verbs=get;list;watch
 //+kubebuilder:rbac:groups=i.4ts.fr,resources=oracleinstancedchallenges,verbs=get;list;watch

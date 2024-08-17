@@ -13,6 +13,7 @@ rules:
   - delete
   - get
   - list
+  - watch
 - apiGroups:
   - ""
   resources:
@@ -20,6 +21,7 @@ rules:
   verbs:
   - create
   - delete
+  - watch
 - apiGroups:
   - apps
   resources:
@@ -28,6 +30,22 @@ rules:
   - create
   - delete
   - get
+  - list
+  - watch
+- apiGroups:
+  - getambassador.io
+  resources:
+  - mappings
+  verbs:
+  - create
+  - delete
+- apiGroups:
+  - getambassador.io
+  resources:
+  - tcpmappings
+  verbs:
+  - create
+  - delete
 - apiGroups:
   - i.4ts.fr
   resources:
@@ -56,13 +74,6 @@ rules:
   - networking.k8s.io
   resources:
   - networkpolicies
-  verbs:
-  - create
-  - delete
-- apiGroups:
-  - voyager.appscode.com
-  resources:
-  - ingress
   verbs:
   - create
   - delete
