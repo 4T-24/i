@@ -52,6 +52,15 @@ type InstancedChallengePod struct {
 	Spec v1.PodSpec `json:"spec"`
 }
 
+// InstancedChallengeRegistrySecret defines the desired state of InstancedChallengeRegistrySecret
+type InstancedChallengeRegistrySecret struct {
+	// +kubebuilder:validation:Required
+	Name string `json:"name"`
+
+	// +kubebuilder:validation:Required
+	Namespace string `json:"namespace"`
+}
+
 // InstancedChallengeSpec defines the desired state of Challenge
 type InstancedChallengeSpec struct {
 	ChallengeSpec `json:""`
@@ -68,6 +77,10 @@ type InstancedChallengeSpec struct {
 	// +kubebuilder:validation:Required
 	// Pods to deploy for the challenge
 	Pods []InstancedChallengePod `json:"pods"`
+
+	// +kubebuilder:validation:Optional
+	// Registry secret to use for pulling images
+	RegistrySecret *InstancedChallengeRegistrySecret `json:"registrySecret"`
 }
 
 // +kubebuilder:object:root=true

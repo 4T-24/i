@@ -3698,6 +3698,16 @@ spec:
                   type: object
                 minItems: 1
                 type: array
+              registrySecret:
+                properties:
+                  name:
+                    type: string
+                  namespace:
+                    type: string
+                required:
+                - name
+                - namespace
+                type: object
               requirements:
                 properties:
                   anonymize:
@@ -3733,6 +3743,7 @@ spec:
             - name
             - oraclePort
             - pods
+            - registrySecret
             - state
             - timeout
             - type

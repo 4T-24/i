@@ -11,6 +11,7 @@ import (
 	"codnect.io/chrono"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func (r *InstancierReconciler) CreateInstance(challengeId, instanceId string) (*InstanceStatus, error) {
@@ -30,6 +31,25 @@ func (r *InstancierReconciler) CreateInstance(challengeId, instanceId string) (*
 	id := names.GetId()
 	namespace := names.GetNamespaceName(challengeId, instanceId)
 	commonLabels := names.GetCommonLabels(challengeId, instanceId, id)
+
+	if chall.RegistrySecret != nil {
+		var secret corev1.Secret = corev1.Secret{
+			ObjectMeta: v1.ObjectMeta{
+				Name:      chall.RegistrySecret.Name,
+				Namespace: chall.RegistrySecret.Namespace,
+			},
+		}
+		if err := r.Get(context.Background(), client.ObjectKeyFromObject(&secret), &secret); err != nil {
+			return nil, err
+		}
+
+		// Move it to the new namespace
+		secret.Namespace = namespace
+
+		if err := r.Create(context.Background(), &secret); err != nil {
+			return nil, err
+		}
+	}
 
 	var namespaceObj = &corev1.Namespace{
 		ObjectMeta: v1.ObjectMeta{
