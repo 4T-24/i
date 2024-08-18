@@ -32,25 +32,6 @@ func (r *InstancierReconciler) CreateInstance(challengeId, instanceId string) (*
 	namespace := names.GetNamespaceName(challengeId, instanceId)
 	commonLabels := names.GetCommonLabels(challengeId, instanceId, id)
 
-	if chall.RegistrySecret != nil {
-		var secret corev1.Secret = corev1.Secret{
-			ObjectMeta: v1.ObjectMeta{
-				Name:      chall.RegistrySecret.Name,
-				Namespace: chall.RegistrySecret.Namespace,
-			},
-		}
-		if err := r.Get(context.Background(), client.ObjectKeyFromObject(&secret), &secret); err != nil {
-			return nil, err
-		}
-
-		// Move it to the new namespace
-		secret.Namespace = namespace
-
-		if err := r.Create(context.Background(), &secret); err != nil {
-			return nil, err
-		}
-	}
-
 	var namespaceObj = &corev1.Namespace{
 		ObjectMeta: v1.ObjectMeta{
 			Name:   namespace,
@@ -68,6 +49,25 @@ func (r *InstancierReconciler) CreateInstance(challengeId, instanceId string) (*
 	}, chrono.WithTime(time.Now().Add(time.Duration(status.Timeout)*time.Second)))
 	if err == nil {
 		r.tasks[namespace] = task
+	}
+
+	if chall.RegistrySecret != nil {
+		var secret corev1.Secret = corev1.Secret{
+			ObjectMeta: v1.ObjectMeta{
+				Name:      chall.RegistrySecret.Name,
+				Namespace: chall.RegistrySecret.Namespace,
+			},
+		}
+		if err := r.Get(context.Background(), client.ObjectKeyFromObject(&secret), &secret); err != nil {
+			return nil, err
+		}
+
+		// Move it to the new namespace
+		secret.Namespace = namespace
+
+		if err := r.Create(context.Background(), &secret); err != nil {
+			return nil, err
+		}
 	}
 
 	networkpolicies := templates.NewNetworkPolicy(&templates.NetworkPolicyParams{
