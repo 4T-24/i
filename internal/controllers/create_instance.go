@@ -62,10 +62,13 @@ func (r *InstancierReconciler) CreateInstance(challengeId, instanceId string) (*
 			return nil, err
 		}
 
-		// Move it to the new namespace
-		secret.Namespace = namespace
+		var newSecret corev1.Secret
+		secret.DeepCopyInto(&newSecret)
 
-		if err := r.Create(context.Background(), &secret); err != nil {
+		// Move it to the new namespace
+		newSecret.Namespace = namespace
+
+		if err := r.Create(context.Background(), &newSecret); err != nil {
 			return nil, err
 		}
 	}

@@ -37,7 +37,7 @@ type InstancierReconciler struct {
 
 //+kubebuilder:rbac:groups="",resources=namespaces,verbs=get;list;create;delete;watch
 //+kubebuilder:rbac:groups="",resources=services,verbs=create;delete;watch
-//+kubebuilder:rbac:groups="",resources=secrets,verbs=get;create
+//+kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;create
 //+kubebuilder:rbac:groups=apps,resources=deployments,verbs=list;get;create;delete;watch
 //+kubebuilder:rbac:groups=networking.k8s.io,resources=networkpolicies,verbs=create;delete
 //+kubebuilder:rbac:groups=getambassador.io,resources=mappings,verbs=create;delete
