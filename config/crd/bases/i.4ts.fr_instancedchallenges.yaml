@@ -3726,7 +3726,6 @@ spec:
             - flag
             - name
             - pods
-            - registrySecret
             - state
             - timeout
             - type
