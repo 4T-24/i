@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"codnect.io/chrono"
+	"github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -59,16 +60,21 @@ func (r *InstancierReconciler) CreateInstance(challengeId, instanceId string) (*
 			},
 		}
 		if err := r.Get(context.Background(), client.ObjectKeyFromObject(&secret), &secret); err != nil {
+			logrus.Error(err)
 			return nil, err
 		}
 
-		var newSecret corev1.Secret
-		secret.DeepCopyInto(&newSecret)
-
-		// Move it to the new namespace
-		newSecret.Namespace = namespace
+		var newSecret = corev1.Secret{
+			ObjectMeta: v1.ObjectMeta{
+				Name:      chall.RegistrySecret.Name,
+				Namespace: namespace,
+			},
+			Data: secret.Data,
+			Type: secret.Type,
+		}
 
 		if err := r.Create(context.Background(), &newSecret); err != nil {
+			logrus.Error(err)
 			return nil, err
 		}
 	}
