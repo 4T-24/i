@@ -56,6 +56,18 @@ spec:
                   type: object
                 minItems: 1
                 type: array
+              files:
+                items:
+                  properties:
+                    name:
+                      type: string
+                    path:
+                      type: string
+                  required:
+                  - name
+                  - path
+                  type: object
+                type: array
               flag:
                 type: string
               hints:
@@ -3692,6 +3704,8 @@ spec:
                 - name
                 - namespace
                 type: object
+              repository:
+                type: string
               requirements:
                 properties:
                   anonymize:

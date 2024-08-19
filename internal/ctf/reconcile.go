@@ -3,6 +3,7 @@ package ctf
 import (
 	"fmt"
 	v1 "instancer/api/v1"
+	"instancer/internal/files"
 	"instancer/internal/utils"
 
 	"github.com/ctfer-io/go-ctfd/api"
@@ -78,7 +79,7 @@ func (c *Client) InsertChallenge(challenge *v1.ChallengeSpec) error {
 		return err
 	}
 
-	// We need to create or update the flag
+	// We need to create the flag
 	_, err = c.PostFlags(&api.PostFlagsParams{
 		Challenge: apiChallenge.ID,
 		Content:   challenge.Flag,
@@ -89,8 +90,34 @@ func (c *Client) InsertChallenge(challenge *v1.ChallengeSpec) error {
 		return err
 	}
 
-	// We need to create or update the hints
+	// We need to create files
+	if len(challenge.Files) > 0 {
+		var filePaths []string
+		for _, f := range challenge.Files {
+			filePaths = append(filePaths, f.Path)
+		}
 
+		fileDatas, err := files.GetFiles(challenge.Repository, filePaths)
+		if err != nil {
+			logrus.WithError(err).WithField("challenge_name", challenge.Name).Error("Failed to download files from git")
+			return err
+		}
+
+		var apiFiles []*api.InputFile
+		for i, f := range challenge.Files {
+			apiFiles = append(apiFiles, &api.InputFile{
+				Name:    f.Name,
+				Content: fileDatas[i],
+			})
+		}
+
+		c.PostFiles(&api.PostFilesParams{
+			Files:     apiFiles,
+			Challenge: &apiChallenge.ID,
+		})
+	}
+
+	// We need to create hints
 	for _, hint := range challenge.Hints {
 		_, err = c.PostHints(&api.PostHintsParams{
 			ChallengeID: apiChallenge.ID,
@@ -119,6 +146,20 @@ func (c *Client) DeleteChallenge(id int) error {
 		err = c.DeleteFlag(fmt.Sprint(flag.ID))
 		if err != nil {
 			logrus.WithField("flag_id", flag.ID).Error("Failed to delete flag")
+			return err
+		}
+	}
+
+	// Delete files
+	files, err := c.GetChallengeFiles(id)
+	if err != nil {
+		logrus.WithField("challenge_id", id).Error("Failed to get files")
+		return err
+	}
+	for _, file := range files {
+		err = c.DeleteFile(fmt.Sprint(file.ID))
+		if err != nil {
+			logrus.WithField("flag_id", file.ID).Error("Failed to delete file")
 			return err
 		}
 	}

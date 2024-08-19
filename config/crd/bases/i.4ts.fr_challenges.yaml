@@ -35,6 +35,18 @@ spec:
                 type: string
               description:
                 type: string
+              files:
+                items:
+                  properties:
+                    name:
+                      type: string
+                    path:
+                      type: string
+                  required:
+                  - name
+                  - path
+                  type: object
+                type: array
               flag:
                 type: string
               hints:
@@ -68,6 +80,8 @@ spec:
               name:
                 type: string
               next_slug:
+                type: string
+              repository:
                 type: string
               requirements:
                 properties:

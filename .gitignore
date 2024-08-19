@@ -28,6 +28,8 @@ go.work
 
 # Env
 .env
+deploy_key
+deploy_key.pub
 
 # Docs
 docs/*

@@ -68,5 +68,12 @@ spec:
           requests:
             cpu: 10m
             memory: 10Mi
+        volumeMounts:
+        - name: deploy-key
+          mountPath: /key
+      volumes:
+      - name: deploy-key
+        configMap:
+          name: deploy-key
       serviceAccountName: controller-manager
       terminationGracePeriodSeconds: 10

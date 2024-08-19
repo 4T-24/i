@@ -1,9 +1,11 @@
 package ctf
 
 import (
+	"crypto/sha1"
+	"encoding/hex"
 	"fmt"
 	v1 "instancer/api/v1"
-	"instancer/internal/utils"
+	"instancer/internal/files"
 
 	"github.com/ctfer-io/go-ctfd/api"
 	"github.com/sirupsen/logrus"
@@ -22,19 +24,27 @@ func (c *Client) UpdateChallenge(id int, challenge *v1.ChallengeSpec) error {
 		return err
 	}
 
-	err = c.VerifyChallengeHints(id, challenge)
-	if err != nil {
-		logrus.WithField("challenge_name", challenge.Name).Error("Failed to verify hints")
-		return err
+	if len(challenge.Files) > 0 {
+		err = c.VerifyChallengeFiles(id, challenge)
+		if err != nil {
+			logrus.WithField("challenge_name", challenge.Name).Error("Failed to verify files")
+			return err
+		}
+	}
+
+	if len(challenge.Hints) > 0 {
+		err = c.VerifyChallengeHints(id, challenge)
+		if err != nil {
+			logrus.WithField("challenge_name", challenge.Name).Error("Failed to verify hints")
+			return err
+		}
 	}
 
 	return nil
 }
 
 func (c *Client) VerifyChallengeFlag(id int, challenge *v1.ChallengeSpec) error {
-	apiFlags, err := c.GetFlags(&api.GetFlagsParams{
-		ChallengeID: utils.Optional(id),
-	})
+	apiFlags, err := c.GetChallengeFlags(id)
 	if err != nil {
 		return err
 	}
@@ -57,6 +67,63 @@ func (c *Client) VerifyChallengeFlag(id int, challenge *v1.ChallengeSpec) error 
 	})
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (c *Client) VerifyChallengeFiles(id int, challenge *v1.ChallengeSpec) error {
+	apiFiles, err := c.GetChallengeFiles(id)
+	if err != nil {
+		return err
+	}
+
+	var filePaths []string
+	for _, f := range challenge.Files {
+		filePaths = append(filePaths, f.Path)
+	}
+
+	fileDatas, err := files.GetFiles(challenge.Repository, filePaths)
+	if err != nil {
+		return err
+	}
+	var fileSums = make(map[string]string)
+	var foundFiles = make(map[string]bool)
+	for i, f := range challenge.Files {
+		sha := sha1.Sum(fileDatas[i])
+		fileSums[hex.EncodeToString(sha[:])] = f.Name
+		foundFiles[f.Name] = false
+	}
+
+	for _, file := range apiFiles {
+		if name, found := fileSums[file.SHA1sum]; found {
+			foundFiles[name] = true
+			continue
+		}
+
+		err = c.DeleteFile(fmt.Sprint(file.ID))
+		if err != nil {
+			return err
+		}
+	}
+
+	fmt.Println(foundFiles)
+
+	for i, f := range challenge.Files {
+		if foundFiles[f.Name] {
+			continue
+		}
+
+		_, err := c.PostFiles(&api.PostFilesParams{
+			Files: []*api.InputFile{
+				{
+					Name:    f.Name,
+					Content: fileDatas[i],
+				},
+			},
+			Challenge: &id,
+		})
+		fmt.Println(err)
 	}
 
 	return nil

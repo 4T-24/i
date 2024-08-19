@@ -18,6 +18,15 @@ type ChallengeHint struct {
 	Requirements *HintRequirements `json:"requirements,omitempty"`
 }
 
+// ChallengeFile defines the desired state of a files
+type ChallengeFile struct {
+	// +kubebuilder:validation:Required
+	Name string `json:"name"`
+
+	// +kubebuilder:validation:Required
+	Path string `json:"path"`
+}
+
 // HintRequirements defines the desired state of a requirement
 type HintRequirements struct {
 	// Anonymize control the behavior of the resource if the prerequisites are
@@ -86,6 +95,14 @@ type ChallengeSpec struct {
 	// +kubebuilder:validation:Optional
 	// Hints of the challenge
 	Hints []ChallengeHint `json:"hints"`
+
+	// +kubebuilder:validation:Optional
+	// Files of the challenge
+	Files []ChallengeFile `json:"files"`
+
+	// +kubebuilder:validation:Optional
+	// Repository to get the files
+	Repository string `json:"repository"`
 
 	// +kubebuilder:validation:Optional
 	// Requirements of the challenge
