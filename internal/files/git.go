@@ -2,13 +2,12 @@ package files
 
 import (
 	"io"
+	"os"
+	"path"
 
-	"github.com/go-git/go-billy/v5/memfs"
 	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/plumbing/cache"
 	"github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
-	"github.com/go-git/go-git/v5/storage/filesystem"
 	"github.com/sirupsen/logrus"
 )
 
@@ -23,9 +22,12 @@ func GetFiles(repo string, files []string) ([][]byte, error) {
 		auth = key
 	}
 
-	fs := memfs.New()
-	storage := filesystem.NewStorage(fs, cache.NewObjectLRU(1*cache.GiByte))
-	_, err = git.Clone(storage, fs, &git.CloneOptions{
+	tempDir, err := os.MkdirTemp(os.TempDir(), "git_*")
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = git.PlainClone(tempDir, false, &git.CloneOptions{
 		URL:  repo,
 		Auth: auth,
 	})
@@ -36,7 +38,9 @@ func GetFiles(repo string, files []string) ([][]byte, error) {
 	var filesData [][]byte = make([][]byte, len(files))
 
 	for i, file := range files {
-		file, err := fs.Open(file)
+		path := path.Join(tempDir, file)
+
+		file, err := os.Open(path)
 		if err != nil {
 			return nil, err
 		}
@@ -48,6 +52,8 @@ func GetFiles(repo string, files []string) ([][]byte, error) {
 
 		filesData[i] = b
 	}
+
+	os.RemoveAll(tempDir)
 
 	return filesData, nil
 }

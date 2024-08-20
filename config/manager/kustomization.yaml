@@ -10,6 +10,9 @@ configMapGenerator:
 - envs:
   - .env
   name: manager-environment
-- name: deploy-key
-  files:
+- files:
   - deploy_key
+  name: deploy-key
+- files:
+  - ssh_known_hosts
+  name: known-hosts

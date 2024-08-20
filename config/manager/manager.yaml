@@ -71,9 +71,14 @@ spec:
         volumeMounts:
         - name: deploy-key
           mountPath: /key
+        - name: known-hosts
+          mountPath: /etc/ssh
       volumes:
       - name: deploy-key
         configMap:
           name: deploy-key
+      - name: known-hosts
+        configMap:
+          name: known-hosts
       serviceAccountName: controller-manager
       terminationGracePeriodSeconds: 10

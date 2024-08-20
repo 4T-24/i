@@ -30,6 +30,7 @@ go.work
 .env
 deploy_key
 deploy_key.pub
+ssh_known_hosts
 
 # Docs
 docs/*

@@ -107,14 +107,12 @@ func (c *Client) VerifyChallengeFiles(id int, challenge *v1.ChallengeSpec) error
 		}
 	}
 
-	fmt.Println(foundFiles)
-
 	for i, f := range challenge.Files {
 		if foundFiles[f.Name] {
 			continue
 		}
 
-		_, err := c.PostFiles(&api.PostFilesParams{
+		_, err = c.PostFiles(&api.PostFilesParams{
 			Files: []*api.InputFile{
 				{
 					Name:    f.Name,
@@ -123,7 +121,9 @@ func (c *Client) VerifyChallengeFiles(id int, challenge *v1.ChallengeSpec) error
 			},
 			Challenge: &id,
 		})
-		fmt.Println(err)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
