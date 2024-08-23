@@ -3,6 +3,7 @@ package templates
 import (
 	"fmt"
 	v1 "instancer/api/v1"
+	"strings"
 
 	core "k8s.io/api/core/v1"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -54,7 +55,7 @@ func NewService(p *ServiceParams) *core.Service {
 
 	for _, port := range p.Ports {
 		service.Spec.Ports = append(service.Spec.Ports, core.ServicePort{
-			Name:     fmt.Sprintf("port-%d-%s", port.Port, port.Protocol),
+			Name:     strings.ToLower(fmt.Sprintf("port-%d-%s", port.Port, port.Protocol)),
 			Protocol: core.ProtocolTCP,
 			Port:     int32(port.Port),
 		})
