@@ -1,6 +1,7 @@
 package templates
 
 import (
+	"fmt"
 	v1 "instancer/api/v1"
 	"instancer/internal/utils"
 
@@ -145,7 +146,7 @@ func NewNetworkPolicy(p *NetworkPolicyParams) []*networking.NetworkPolicy {
 	for _, pod := range p.Pods {
 		networkPolicies = append(networkPolicies, &networking.NetworkPolicy{
 			ObjectMeta: meta.ObjectMeta{
-				Name:      "allow-ingress",
+				Name:      fmt.Sprintf("allow-ingress-%s", pod.Name),
 				Namespace: p.Namespace,
 			},
 			Spec: networking.NetworkPolicySpec{
