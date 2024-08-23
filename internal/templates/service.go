@@ -54,9 +54,14 @@ func NewService(p *ServiceParams) *core.Service {
 	}
 
 	for _, port := range p.Ports {
+		proto := core.ProtocolTCP
+		if port.Protocol == "UDP" {
+			proto = core.ProtocolUDP
+		}
+
 		service.Spec.Ports = append(service.Spec.Ports, core.ServicePort{
 			Name:     strings.ToLower(fmt.Sprintf("port-%d-%s", port.Port, port.Protocol)),
-			Protocol: core.ProtocolTCP,
+			Protocol: proto,
 			Port:     int32(port.Port),
 		})
 	}
