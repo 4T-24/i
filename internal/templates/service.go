@@ -54,7 +54,7 @@ func NewService(p *ServiceParams) *core.Service {
 
 	for _, port := range p.Ports {
 		service.Spec.Ports = append(service.Spec.Ports, core.ServicePort{
-			Name:     fmt.Sprintf("port-%d", port.Port),
+			Name:     fmt.Sprintf("port-%d-%s", port.Port, port.Protocol),
 			Protocol: core.ProtocolTCP,
 			Port:     int32(port.Port),
 		})
