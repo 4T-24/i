@@ -35,17 +35,16 @@ type InstancierReconciler struct {
 	tasks map[string]chrono.ScheduledTask
 }
 
-//+kubebuilder:rbac:groups="",resources=namespaces,verbs=get;list;create;delete;watch
-//+kubebuilder:rbac:groups="",resources=services,verbs=create;delete;watch
-//+kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;create
-//+kubebuilder:rbac:groups=apps,resources=deployments,verbs=list;get;create;delete;watch
-//+kubebuilder:rbac:groups=networking.k8s.io,resources=networkpolicies,verbs=create;delete
-//+kubebuilder:rbac:groups=getambassador.io,resources=mappings,verbs=create;delete
-//+kubebuilder:rbac:groups=getambassador.io,resources=tcpmappings,verbs=create;delete
-//+kubebuilder:rbac:groups=i.4ts.fr,resources=challenges,verbs=get;list;watch
-//+kubebuilder:rbac:groups=i.4ts.fr,resources=instancedchallenges,verbs=get;list;watch
-//+kubebuilder:rbac:groups=i.4ts.fr,resources=oracleinstancedchallenges,verbs=get;list;watch
-
+// +kubebuilder:rbac:groups="",resources=namespaces,verbs=get;list;create;delete;watch
+// +kubebuilder:rbac:groups="",resources=services,verbs=create;delete;watch
+// +kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;create
+// +kubebuilder:rbac:groups=apps,resources=deployments,verbs=list;get;create;delete;watch
+// +kubebuilder:rbac:groups=networking.k8s.io,resources=networkpolicies,verbs=create;delete
+// +kubebuilder:rbac:groups=getambassador.io,resources=mappings,verbs=create;delete
+// +kubebuilder:rbac:groups=getambassador.io,resources=tcpmappings,verbs=create;delete
+// +kubebuilder:rbac:groups=i.4ts.fr,resources=challenges,verbs=get;list;watch
+// +kubebuilder:rbac:groups=i.4ts.fr,resources=instancedchallenges,verbs=get;list;watch
+// +kubebuilder:rbac:groups=i.4ts.fr,resources=oracleinstancedchallenges,verbs=get;list;watch
 func (r *InstancierReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = log.FromContext(ctx)
 
@@ -54,9 +53,16 @@ func (r *InstancierReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		r.Reinit()
 	}
 
-	// Register the challenge onto CTFd
-	defer r.ReconcileCTFd()
+	res, err := r.Register(ctx, req)
+	if err != nil {
+		return res, err
+	}
 
+	// Register the challenge onto CTFd (and ask for reconciliation if fail)
+	return res, r.ReconcileCTFd()
+}
+
+func (r *InstancierReconciler) Register(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	var challenge v1.Challenge
 	err := r.Get(ctx, req.NamespacedName, &challenge)
 	if err == nil {
@@ -97,13 +103,9 @@ func (r *InstancierReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	return ctrl.Result{}, nil
 }
 
-func (r *InstancierReconciler) ReconcileCTFd() {
+func (r *InstancierReconciler) ReconcileCTFd() error {
 	logrus.WithField("challenges", len(r.ctfdChallenges)).Info("Reconciling CTFd with challenges")
-	err := r.CtfClient.ReconcileChallenge(r.ctfdChallenges)
-	if err != nil {
-		logrus.WithError(err).Error("Failed to reconcile CTFd")
-		return
-	}
+	return r.CtfClient.ReconcileChallenge(r.ctfdChallenges)
 }
 
 // Reinit is the first run
