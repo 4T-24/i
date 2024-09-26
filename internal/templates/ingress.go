@@ -70,6 +70,9 @@ func NewIngress(p *IngressParams) client.Object {
 			Prefix:   "/",
 			Service:  fmt.Sprintf("%s.%s:%d", p.Host.ServiceName, p.Namespace, p.Host.ServicePort),
 			Hostname: p.Host.Host,
+			AllowUpgrade: []string{
+				"websocket", // 🐝
+			},
 		},
 	}
 
