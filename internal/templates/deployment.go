@@ -57,6 +57,9 @@ func NewDeployment(p *DeploymentParams) *apps.Deployment {
 			Template: core.PodTemplateSpec{
 				ObjectMeta: v1.ObjectMeta{
 					Labels: labels,
+					Annotations: map[string]string{
+						"io.kubernetes.cri-o.userns-mode": "auto:size=65536",
+					},
 				},
 				Spec: p.Spec,
 			},
