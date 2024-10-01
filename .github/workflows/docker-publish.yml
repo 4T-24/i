@@ -96,7 +96,7 @@ jobs:
         run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}
 
   deploy:
-    needs: docker
+    needs: build
     name: Deploy to production
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
