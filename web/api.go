@@ -9,7 +9,7 @@ import (
 func SetupServer(reconciler *controllers.InstancierReconciler) {
 	s := fuego.NewServer()
 
-	s.Addr = "0.0.0.0:80"
+	s.Addr = "0.0.0.0:8080"
 
 	fuego.Get(s, "/api/v1/{challengeId}/{instanceId}/is_solved", IsInstanceSolved(reconciler), FromCtfd)
 	fuego.Get(s, "/api/v1/{challengeId}/{instanceId}", GetInstance(reconciler), FromCtfd)
