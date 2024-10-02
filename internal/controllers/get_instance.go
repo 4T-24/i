@@ -14,9 +14,10 @@ import (
 )
 
 type InstanceServers struct {
-	Kind string `json:"kind"`
-	Host string `json:"host"`
-	Port int    `json:"port,omitempty"`
+	Kind         string `json:"kind"`
+	Host         string `json:"host"`
+	Port         int    `json:"port,omitempty"`
+	Instructions string `json:"instructions,omitempty"`
 }
 
 type InstanceStatus struct {

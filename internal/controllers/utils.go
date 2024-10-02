@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 	"instancer/internal/env"
 	"instancer/internal/names"
 
@@ -41,6 +42,7 @@ func (r *InstancierReconciler) GetServer(challengeId, id, pod, kind string) Inst
 	if kind == "tcp" {
 		c := env.Get()
 		s.Port = c.NodePort
+		s.Instructions = fmt.Sprintf("openssl s_client -quiet -verify_quiet -connect %s:%d", s.Host, s.Port)
 	}
 
 	return s
