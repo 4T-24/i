@@ -10,6 +10,8 @@ type Config struct {
 		URL   string `env:"URL"`
 		Token string `env:"TOKEN"`
 	} `envPrefix:"CTFD_"`
+
+	Token string `env:"TOKEN"`
 }
 
 func Get() *Config {
