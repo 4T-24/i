@@ -88,7 +88,7 @@ func (r *InstancierReconciler) GetInstance(challengeId, instanceId string) (*Ins
 	id := namespace.Labels["i.4ts.fr/instance"]
 
 	for _, port := range chall.ExposedPorts {
-		status.Servers = append(status.Servers, r.GetServer(challengeId, id, port.Pod, port.Kind))
+		status.Servers = append(status.Servers, r.GetServer(challengeId, id, port.Pod, port.Port, port.Kind))
 	}
 
 	t := namespace.CreationTimestamp.Time.Add(time.Duration(status.Timeout) * time.Second)

@@ -120,7 +120,7 @@ func (r *InstancierReconciler) CreateInstance(challengeId, instanceId string) (*
 			Namespace: namespace,
 			Kind:      port.Kind,
 			Host: templates.IngressHost{
-				Host:        names.GetHost(port.Pod, challengeId, id),
+				Host:        names.GetHost(port.Pod, port.Port, challengeId, id),
 				ServiceName: port.Pod,
 				ServicePort: port.Port,
 			},
