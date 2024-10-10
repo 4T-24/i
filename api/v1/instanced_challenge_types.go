@@ -35,6 +35,9 @@ type InstancedChallengeExposedPort struct {
 
 	// +kubebuilder:validation:Required
 	Pod string `json:"pod"`
+
+	// +kubebuilder:validation:Optional
+	Description string `json:"description"`
 }
 
 // InstancedChallengePod defines the desired state of InstancedChallengePod

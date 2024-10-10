@@ -6,6 +6,8 @@ import (
 	"instancer/internal/env"
 	"instancer/internal/names"
 
+	instancer "instancer/api/v1"
+
 	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -33,13 +35,14 @@ func (r *InstancierReconciler) GetDeployment(pod, namespace string) (*v1.Deploym
 	return deployment, err
 }
 
-func (r *InstancierReconciler) GetServer(challengeId string, id string, pod string, port int, kind string) InstanceServers {
+func (r *InstancierReconciler) GetServer(challengeId string, id string, port instancer.InstancedChallengeExposedPort) InstanceServers {
 	s := InstanceServers{
-		Kind: kind,
-		Host: names.GetHost(pod, port, challengeId, id),
+		Kind:        port.Kind,
+		Host:        names.GetHost(port.Pod, port.Port, challengeId, id),
+		Description: port.Description,
 	}
 
-	if kind == "tcp" {
+	if port.Kind == "tcp" {
 		c := env.Get()
 		s.Port = c.NodePort
 		s.Instructions = fmt.Sprintf("openssl s_client -quiet -verify_quiet -connect %s:%d", s.Host, s.Port)
