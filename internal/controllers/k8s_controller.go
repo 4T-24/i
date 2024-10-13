@@ -5,6 +5,7 @@ import (
 	v1 "instancer/api/v1"
 	"instancer/internal/ctf"
 	"strconv"
+	"sync"
 	"time"
 
 	core "k8s.io/api/core/v1"
@@ -35,6 +36,8 @@ type InstancierReconciler struct {
 	tasks map[string]chrono.ScheduledTask
 }
 
+var reconcilerMutex sync.Mutex
+
 // +kubebuilder:rbac:groups="",resources=namespaces,verbs=get;list;create;delete;watch
 // +kubebuilder:rbac:groups="",resources=services,verbs=create;delete;watch
 // +kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;create
@@ -46,6 +49,9 @@ type InstancierReconciler struct {
 // +kubebuilder:rbac:groups=i.4ts.fr,resources=instancedchallenges,verbs=get;list;watch
 // +kubebuilder:rbac:groups=i.4ts.fr,resources=oracleinstancedchallenges,verbs=get;list;watch
 func (r *InstancierReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+	reconcilerMutex.Lock()
+	defer reconcilerMutex.Unlock()
+
 	_ = log.FromContext(ctx)
 
 	// Init map if not init

@@ -9,6 +9,8 @@ import (
 
 type Client struct {
 	*ctfd.Client
+
+	Queue chan *ctfd.Challenge
 }
 
 func New() *Client {
@@ -22,5 +24,6 @@ func New() *Client {
 	client := ctfd.NewClient(c.CTFd.URL, nonce, session, c.CTFd.Token)
 	return &Client{
 		Client: client,
+		Queue:  make(chan *ctfd.Challenge),
 	}
 }
