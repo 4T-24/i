@@ -6,7 +6,7 @@ import (
 )
 
 func GetId() string {
-	randomBytes := make([]byte, 16)
+	randomBytes := make([]byte, 8)
 	rand.Read(randomBytes)
 	return fmt.Sprintf("%x", randomBytes)
 }
