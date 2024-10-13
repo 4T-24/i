@@ -33,4 +33,12 @@ deploy_key.pub
 ssh_known_hosts
 
 # Docs
-docs/*
+docs/*# Devenv
+.devenv*
+devenv.local.nix
+
+# direnv
+.direnv
+
+# pre-commit
+.pre-commit-config.yaml

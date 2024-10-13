@@ -38,6 +38,8 @@ spec:
               exposedPorts:
                 items:
                   properties:
+                    description:
+                      type: string
                     kind:
                       enum:
                       - tcp
