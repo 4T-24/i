@@ -34,6 +34,7 @@ func (r *InstancierReconciler) DeleteInstance(challengeId, instanceId string) (*
 		return nil, err
 	}
 
+	delete(instancedIds, instanceId)
 	status.Status = "Stopping"
 	return status, nil
 }

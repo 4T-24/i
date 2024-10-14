@@ -15,8 +15,26 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+var (
+	instancedIds       = make(map[string]string)
+	instanceInCreation = make(map[string]bool)
+)
+
 func (r *InstancierReconciler) CreateInstance(challengeId, instanceId string) (*InstanceStatus, error) {
 	var status = &InstanceStatus{}
+
+	if v, found := instancedIds[instanceId]; found {
+		// Delete the instance if it already exists
+		r.DeleteInstance(v, instanceId)
+		delete(instancedIds, instanceId)
+	}
+
+	if _, found := instanceInCreation[instanceId]; found {
+		status.Status = "Creating"
+		return status, nil
+	}
+
+	instanceInCreation[instanceId] = true
 
 	chall, found := r.GetChallengeSpec(challengeId)
 	if !found {
@@ -129,6 +147,9 @@ func (r *InstancierReconciler) CreateInstance(challengeId, instanceId string) (*
 			return nil, err
 		}
 	}
+
+	instancedIds[instanceId] = challengeId
+	delete(instanceInCreation, instanceId)
 
 	status.Status = "Starting"
 	return status, nil
