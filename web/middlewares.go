@@ -23,3 +23,17 @@ func FromCtfd(h http.Handler) http.Handler {
 		h.ServeHTTP(w, r)
 	})
 }
+
+func FromAdmin(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		cfg := env.Get()
+		token := r.Header.Get(XCtfdAuth)
+
+		if token != cfg.GlobalToken {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		h.ServeHTTP(w, r)
+	})
+}

@@ -124,6 +124,7 @@ type ChallengeSpec struct {
 	// Field for later use
 	Slug        string `json:"-"`
 	IsInstanced bool   `json:"-"`
+	IsGlobal    bool   `json:"-"`
 	HasOracle   bool   `json:"-"`
 }
 

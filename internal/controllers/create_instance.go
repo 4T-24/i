@@ -3,25 +3,39 @@ package controllers
 import (
 	"context"
 	"fmt"
+	v1 "instancer/api/v1"
 	"instancer/internal/names"
 	"instancer/internal/templates"
 	"strconv"
 	"time"
 
 	"codnect.io/chrono"
+	"github.com/failsafe-go/failsafe-go"
+	"github.com/failsafe-go/failsafe-go/retrypolicy"
 	"github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var (
 	instancedIds       = make(map[string]string)
 	instanceInCreation = make(map[string]bool)
+
+	retryPolicy = retrypolicy.Builder[any]().
+			WithDelay(time.Second).
+			WithMaxRetries(3).
+			Build()
 )
 
 func (r *InstancierReconciler) CreateInstance(challengeId, instanceId string) (*InstanceStatus, error) {
 	var status = &InstanceStatus{}
+
+	chall, found := r.GetChallengeSpec(challengeId)
+	if !found {
+		status.Status = "Unknown"
+		return status, nil
+	}
 
 	if v, found := instancedIds[instanceId]; found {
 		// Delete the instance if it already exists
@@ -35,12 +49,10 @@ func (r *InstancierReconciler) CreateInstance(challengeId, instanceId string) (*
 	}
 
 	instanceInCreation[instanceId] = true
-
-	chall, found := r.GetChallengeSpec(challengeId)
-	if !found {
-		status.Status = "Unknown"
-		return status, nil
-	}
+	defer func() {
+		// Avoid locking the instance permanently
+		delete(instanceInCreation, instanceId)
+	}()
 
 	status = &InstanceStatus{
 		Name:    chall.Name,
@@ -52,14 +64,20 @@ func (r *InstancierReconciler) CreateInstance(challengeId, instanceId string) (*
 	commonLabels := names.GetCommonLabels(challengeId, instanceId, id)
 
 	var namespaceObj = &corev1.Namespace{
-		ObjectMeta: v1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:   namespace,
 			Labels: commonLabels,
 		},
 	}
 	namespaceObj.Labels["i.4ts.fr/ttl"] = fmt.Sprint(chall.Timeout)
+	namespaceObj.Labels["i.4ts.fr/stops-at"] = time.Now().Add(time.Duration(chall.Timeout) * time.Second).Format(time.RFC3339)
+	namespaceObj.Labels["i.4ts.fr/stops-at-timestamp"] = fmt.Sprint(time.Now().Add(time.Duration(chall.Timeout) * time.Second).Unix())
 
-	if err := r.Create(context.Background(), namespaceObj); err != nil {
+	err := failsafe.Run(func() error {
+		return r.Create(context.Background(), namespaceObj)
+	}, retryPolicy)
+	if err != nil {
+		logrus.Error(err)
 		return nil, err
 	}
 
@@ -72,7 +90,7 @@ func (r *InstancierReconciler) CreateInstance(challengeId, instanceId string) (*
 
 	if chall.RegistrySecret != nil {
 		var secret corev1.Secret = corev1.Secret{
-			ObjectMeta: v1.ObjectMeta{
+			ObjectMeta: metav1.ObjectMeta{
 				Name:      chall.RegistrySecret.Name,
 				Namespace: chall.RegistrySecret.Namespace,
 			},
@@ -83,7 +101,7 @@ func (r *InstancierReconciler) CreateInstance(challengeId, instanceId string) (*
 		}
 
 		var newSecret = corev1.Secret{
-			ObjectMeta: v1.ObjectMeta{
+			ObjectMeta: metav1.ObjectMeta{
 				Name:      chall.RegistrySecret.Name,
 				Namespace: namespace,
 			},
@@ -104,7 +122,11 @@ func (r *InstancierReconciler) CreateInstance(challengeId, instanceId string) (*
 	})
 
 	for _, networkpolicy := range networkpolicies {
-		if err := r.Create(context.Background(), networkpolicy); err != nil {
+		err := failsafe.Run(func() error {
+			return r.Create(context.Background(), networkpolicy)
+		}, retryPolicy)
+		if err != nil {
+			logrus.Error(err)
 			return nil, err
 		}
 	}
@@ -117,7 +139,11 @@ func (r *InstancierReconciler) CreateInstance(challengeId, instanceId string) (*
 			Egress:       strconv.FormatBool(pod.Egress),
 			Spec:         pod.Spec,
 		})
-		if err := r.Create(context.Background(), deployment); err != nil {
+		err := failsafe.Run(func() error {
+			return r.Create(context.Background(), deployment)
+		}, retryPolicy)
+		if err != nil {
+			logrus.Error(err)
 			return nil, err
 		}
 
@@ -127,7 +153,11 @@ func (r *InstancierReconciler) CreateInstance(challengeId, instanceId string) (*
 			CommonLabels: commonLabels,
 			Ports:        pod.Ports,
 		})
-		if err := r.Create(context.Background(), service); err != nil {
+		err = failsafe.Run(func() error {
+			return r.Create(context.Background(), service)
+		}, retryPolicy)
+		if err != nil {
+			logrus.Error(err)
 			return nil, err
 		}
 	}
@@ -143,14 +173,38 @@ func (r *InstancierReconciler) CreateInstance(challengeId, instanceId string) (*
 				ServicePort: port.Port,
 			},
 		})
-		if err := r.Create(context.Background(), ingress); err != nil {
+		err := failsafe.Run(func() error {
+			return r.Create(context.Background(), ingress)
+		}, retryPolicy)
+		if err != nil {
+			logrus.Error(err)
 			return nil, err
 		}
 	}
 
 	instancedIds[instanceId] = challengeId
-	delete(instanceInCreation, instanceId)
 
 	status.Status = "Starting"
 	return status, nil
+}
+
+func (r *InstancierReconciler) CreateGlobalInstances() ([]*InstanceStatus, error) {
+	var out []*InstanceStatus
+
+	for _, chall := range r.challenges {
+		switch v := chall.(type) {
+		case *v1.GloballyInstancedChallenge:
+			status, err := r.CreateInstance(v.Name, "global")
+			if err != nil {
+				out = append(out, &InstanceStatus{
+					Name:   v.Name,
+					Status: "Errored : " + err.Error(),
+				})
+				continue
+			}
+			out = append(out, status)
+		}
+	}
+
+	return out, nil
 }

@@ -24,12 +24,24 @@ func GetInstance(reconciler *controllers.InstancierReconciler) func(c fuego.Cont
 	}
 }
 
+func GetGlobals(reconciler *controllers.InstancierReconciler) func(c fuego.ContextNoBody) ([]*controllers.InstanceStatus, error) {
+	return func(c fuego.ContextNoBody) ([]*controllers.InstanceStatus, error) {
+		return reconciler.GetGlobalInstances()
+	}
+}
+
 func CreateInstance(reconciler *controllers.InstancierReconciler) func(c fuego.ContextNoBody) (*controllers.InstanceStatus, error) {
 	return func(c fuego.ContextNoBody) (*controllers.InstanceStatus, error) {
 		challengeId := c.PathParam("challengeId")
 		instanceId := c.PathParam("instanceId")
 
 		return reconciler.CreateInstance(challengeId, instanceId)
+	}
+}
+
+func CreateGlobals(reconciler *controllers.InstancierReconciler) func(c fuego.ContextNoBody) ([]*controllers.InstanceStatus, error) {
+	return func(c fuego.ContextNoBody) ([]*controllers.InstanceStatus, error) {
+		return reconciler.CreateGlobalInstances()
 	}
 }
 

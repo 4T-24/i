@@ -18,6 +18,12 @@ func (r *InstancierReconciler) RegisterChallenge(obj client.Object) {
 		c.Spec.ChallengeSpec.Slug = c.Name
 		c.Spec.ChallengeSpec.IsInstanced = true
 		r.ctfdChallenges[c.Name] = &c.Spec.ChallengeSpec
+	case *v1.GloballyInstancedChallenge:
+		r.challenges[c.Name] = c
+
+		c.Spec.ChallengeSpec.Slug = c.Name
+		c.Spec.ChallengeSpec.IsGlobal = true
+		r.ctfdChallenges[c.Name] = &c.Spec.ChallengeSpec
 	case *v1.OracleInstancedChallenge:
 		r.challenges[c.Name] = c
 

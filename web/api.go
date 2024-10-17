@@ -11,6 +11,9 @@ func SetupServer(reconciler *controllers.InstancierReconciler) {
 
 	s.Addr = "0.0.0.0:8080"
 
+	fuego.Get(s, "/api/v1/globals", GetGlobals(reconciler), FromAdmin)
+	fuego.Post(s, "/api/v1/globals", CreateGlobals(reconciler), FromAdmin)
+
 	fuego.Get(s, "/api/v1/{challengeId}/{instanceId}/is_solved", IsInstanceSolved(reconciler), FromCtfd)
 	fuego.Get(s, "/api/v1/{challengeId}/{instanceId}", GetInstance(reconciler), FromCtfd)
 	fuego.Post(s, "/api/v1/{challengeId}/{instanceId}", CreateInstance(reconciler), FromCtfd)

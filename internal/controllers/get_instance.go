@@ -39,6 +39,8 @@ func (r *InstancierReconciler) GetChallengeSpec(challengeId string) (*v1.Instanc
 	switch o := obj.(type) {
 	case *v1.InstancedChallenge:
 		return &o.Spec, true
+	case *v1.GloballyInstancedChallenge:
+		return &o.Spec.InstancedChallengeSpec, true
 	case *v1.OracleInstancedChallenge:
 		return &o.Spec.InstancedChallengeSpec, true
 	default:
@@ -96,6 +98,25 @@ func (r *InstancierReconciler) GetInstance(challengeId, instanceId string) (*Ins
 	status.EndsAt = &t
 
 	return status, nil
+}
+
+func (r *InstancierReconciler) GetGlobalInstances() ([]*InstanceStatus, error) {
+	var out []*InstanceStatus
+	for _, chall := range r.challenges {
+		switch v := chall.(type) {
+		case *v1.GloballyInstancedChallenge:
+			status, err := r.GetInstance(v.Name, "global")
+			if err != nil {
+				out = append(out, &InstanceStatus{
+					Name:   v.Name,
+					Status: "Errored : " + err.Error(),
+				})
+				continue
+			}
+			out = append(out, status)
+		}
+	}
+	return out, nil
 }
 
 func (r *InstancierReconciler) IsInstanceSolved(challengeId, instanceId string) (bool, error) {

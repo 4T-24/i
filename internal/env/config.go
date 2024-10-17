@@ -11,7 +11,8 @@ type Config struct {
 		Token string `env:"TOKEN"`
 	} `envPrefix:"CTFD_"`
 
-	Token string `env:"TOKEN"`
+	Token       string `env:"TOKEN"`
+	GlobalToken string `env:"GLOBAL_TOKEN"`
 }
 
 func Get() *Config {

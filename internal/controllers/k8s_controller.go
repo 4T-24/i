@@ -133,7 +133,7 @@ func (r *InstancierReconciler) Reinit() {
 	}
 
 	var instancedChallenges v1.InstancedChallengeList
-	err = r.List(context.Background(), &instancedChallenges, client.InNamespace("default"))
+	err = r.List(context.Background(), &instancedChallenges)
 	if err != nil {
 		panic(err)
 	}
@@ -143,12 +143,22 @@ func (r *InstancierReconciler) Reinit() {
 	}
 
 	var oracleInstancedChallenges v1.OracleInstancedChallengeList
-	err = r.List(context.Background(), &oracleInstancedChallenges, client.InNamespace("default"))
+	err = r.List(context.Background(), &oracleInstancedChallenges)
 	if err != nil {
 		panic(err)
 	}
 
 	for _, challenge := range oracleInstancedChallenges.Items {
+		r.RegisterChallenge(&challenge)
+	}
+
+	var globallyInstancedChallenges v1.GloballyInstancedChallengeList
+	err = r.List(context.Background(), &globallyInstancedChallenges)
+	if err != nil {
+		panic(err)
+	}
+
+	for _, challenge := range globallyInstancedChallenges.Items {
 		r.RegisterChallenge(&challenge)
 	}
 
@@ -161,12 +171,20 @@ func (r *InstancierReconciler) Reinit() {
 
 	for _, namespace := range namespaces.Items {
 		if by, found := namespace.Labels["app.kubernetes.io/managed-by"]; found && by == "atsi" {
-			ttl := namespace.Labels["i.4ts.fr/ttl"]
-			if ttl == "" {
-				logrus.WithField("namespace", namespace.Name).Warn("No TTL found")
+			timestamp := namespace.Labels["i.4ts.fr/stops-at-timestamp"]
+			timestampI, err := strconv.Atoi(timestamp)
+			if err != nil {
+				logrus.WithError(err).WithField("namespace", namespace.Name).Warn("Failed to parse timestamp")
 				continue
 			}
 
+			if time.Now().Unix() > int64(timestampI) {
+				logrus.WithField("namespace", namespace.Name).Warn("Namespace expired")
+				r.DeleteInstance(namespace.Labels["i.4ts.fr/challenge"], namespace.Labels["i.4ts.fr/instance"])
+				continue
+			}
+
+			ttl := namespace.Labels["i.4ts.fr/ttl"]
 			ttlI, err := strconv.Atoi(ttl)
 			if err != nil {
 				logrus.WithError(err).WithField("namespace", namespace.Name).Warn("Failed to parse TTL")
@@ -190,15 +208,31 @@ func (r *InstancierReconciler) Reinit() {
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *InstancierReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	ctrl.NewControllerManagedBy(mgr).
+	err := ctrl.NewControllerManagedBy(mgr).
 		For(&v1.Challenge{}, builder.WithPredicates(predicates())).
 		Complete(r)
-	ctrl.NewControllerManagedBy(mgr).
+	if err != nil {
+		return err
+	}
+	err = ctrl.NewControllerManagedBy(mgr).
 		For(&v1.InstancedChallenge{}, builder.WithPredicates(predicates())).
 		Complete(r)
-	return ctrl.NewControllerManagedBy(mgr).
+	if err != nil {
+		return err
+	}
+	err = ctrl.NewControllerManagedBy(mgr).
+		For(&v1.GloballyInstancedChallenge{}, builder.WithPredicates(predicates())).
+		Complete(r)
+	if err != nil {
+		return err
+	}
+	err = ctrl.NewControllerManagedBy(mgr).
 		For(&v1.OracleInstancedChallenge{}, builder.WithPredicates(predicates())).
 		Complete(r)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func predicates() predicate.Predicate {
