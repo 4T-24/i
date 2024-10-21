@@ -100,7 +100,6 @@ func (c *Client) InsertChallenge(challenge *v1.ChallengeSpec) error {
 		fileDatas, err := files.GetFiles(challenge.Repository, filePaths)
 		if err != nil {
 			logrus.WithError(err).WithField("challenge_name", challenge.Name).Error("Failed to download files from git")
-			return err
 		}
 
 		var apiFiles []*api.InputFile
