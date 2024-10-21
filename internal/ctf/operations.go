@@ -137,12 +137,20 @@ func (c *Client) PatchCustomChallenge(id int, challenge *v1.ChallengeSpec) (*api
 		Name:        challenge.Name,
 		Category:    challenge.Category,
 		Description: challenge.Description,
-		Initial:     utils.Optional(utils.SprintPtr(challenge.Initial)),
-		Decay:       utils.Optional(utils.SprintPtr(challenge.Decay)),
-		Minimum:     utils.Optional(utils.SprintPtr(challenge.Minimum)),
-		MaxAttempts: utils.Optional(utils.SprintPtr(challenge.MaxAttempts)),
 		Function:    challenge.DecayFunction,
 		State:       challenge.State,
+	}
+	if challenge.Initial != nil {
+		params.Initial = utils.Optional(utils.SprintPtr(challenge.Initial))
+	}
+	if challenge.Decay != nil {
+		params.Decay = utils.Optional(utils.SprintPtr(challenge.Decay))
+	}
+	if challenge.Minimum != nil {
+		params.Minimum = utils.Optional(utils.SprintPtr(challenge.Minimum))
+	}
+	if challenge.MaxAttempts != nil {
+		params.MaxAttempts = utils.Optional(utils.SprintPtr(challenge.MaxAttempts))
 	}
 	if challenge.Value != 0 {
 		params.Value = utils.Optional(challenge.Value)
