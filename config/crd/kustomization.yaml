@@ -5,6 +5,7 @@ resources:
 - bases/i.4ts.fr_challenges.yaml
 - bases/i.4ts.fr_instancedchallenges.yaml
 - bases/i.4ts.fr_oracleinstancedchallenges.yaml
+- bases/i.4ts.fr_globallyinstancedchallenges.yaml
 # +kubebuilder:scaffold:crdkustomizeresource
 
 patches:
