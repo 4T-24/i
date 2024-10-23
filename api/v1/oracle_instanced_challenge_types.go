@@ -37,11 +37,13 @@ type OracleInstancedChallengeSpec struct {
 // +kubebuilder:object:root=true
 
 // OracleInstancedChallenge is the Schema for the oraclechallenges API
+// +kubebuilder:subresource:status
 type OracleInstancedChallenge struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec OracleInstancedChallengeSpec `json:"spec,omitempty"`
+	Spec   OracleInstancedChallengeSpec `json:"spec,omitempty"`
+	Status ChallengeStatus              `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true

@@ -128,14 +128,20 @@ type ChallengeSpec struct {
 	HasOracle   bool   `json:"-"`
 }
 
-// +kubebuilder:object:root=true
+// ChallengeStatus defines the observed state of Challenge
+type ChallengeStatus struct {
+	Error string `json:"phase"`
+}
 
 // Challenge is the Schema for the challenges API
+// +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
 type Challenge struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec ChallengeSpec `json:"spec,omitempty"`
+	Spec   ChallengeSpec   `json:"spec,omitempty"`
+	Status ChallengeStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true

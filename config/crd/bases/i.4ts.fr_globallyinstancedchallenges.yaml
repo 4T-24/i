@@ -3763,6 +3763,15 @@ spec:
             - timeout
             - type
             type: object
+          status:
+            properties:
+              phase:
+                type: string
+            required:
+            - phase
+            type: object
         type: object
     served: true
     storage: true
+    subresources:
+      status: {}

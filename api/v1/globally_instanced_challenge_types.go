@@ -37,11 +37,13 @@ type GloballyInstancedChallengeSpec struct {
 // +kubebuilder:object:root=true
 
 // GloballyInstancedChallenge is the Schema for the GlobalChallenges API
+// +kubebuilder:subresource:status
 type GloballyInstancedChallenge struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec GloballyInstancedChallengeSpec `json:"spec,omitempty"`
+	Spec   GloballyInstancedChallengeSpec `json:"spec,omitempty"`
+	Status ChallengeStatus                `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true

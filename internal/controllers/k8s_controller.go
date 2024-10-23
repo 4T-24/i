@@ -27,8 +27,8 @@ type InstancierReconciler struct {
 
 	init bool
 
-	challenges     map[string]client.Object
-	ctfdChallenges map[string]*v1.ChallengeSpec
+	challenges          map[string]client.Object
+	ctfdChallengesSpecs map[string]*v1.ChallengeSpec
 
 	CtfClient *ctf.Client
 
@@ -110,14 +110,54 @@ func (r *InstancierReconciler) Register(ctx context.Context, req ctrl.Request) (
 }
 
 func (r *InstancierReconciler) ReconcileCTFd() error {
-	logrus.WithField("challenges", len(r.ctfdChallenges)).Info("Reconciling CTFd with challenges")
-	return r.CtfClient.ReconcileChallenge(r.ctfdChallenges)
+	logrus.WithField("challenges", len(r.ctfdChallengesSpecs)).Info("Reconciling CTFd with challenges")
+	errors, err := r.CtfClient.ReconcileChallenge(r.ctfdChallengesSpecs)
+	if err != nil {
+		logrus.WithError(err).Error("Failed to reconcile challenges")
+		return err
+	}
+
+	for slug, err := range errors {
+		challObj, found := r.challenges[slug]
+		switch chall := challObj.(type) {
+		case *v1.Challenge:
+			if found {
+				chall.Status.Error = err.Error()
+			} else {
+				chall.Status.Error = ""
+			}
+		case *v1.InstancedChallenge:
+			if found {
+				chall.Status.Error = err.Error()
+			} else {
+				chall.Status.Error = ""
+			}
+		case *v1.GloballyInstancedChallenge:
+			if found {
+				chall.Status.Error = err.Error()
+			} else {
+				chall.Status.Error = ""
+			}
+		case *v1.OracleInstancedChallenge:
+			if found {
+				chall.Status.Error = err.Error()
+			} else {
+				chall.Status.Error = ""
+			}
+		}
+		err := r.Status().Update(context.Background(), challObj)
+		if err != nil {
+			logrus.WithError(err).Error("Failed to update status for challenge")
+		}
+	}
+
+	return nil
 }
 
 // Reinit is the first run
 func (r *InstancierReconciler) Reinit() {
 	r.challenges = make(map[string]client.Object)
-	r.ctfdChallenges = make(map[string]*v1.ChallengeSpec)
+	r.ctfdChallengesSpecs = make(map[string]*v1.ChallengeSpec)
 	r.tasks = make(map[string]chrono.ScheduledTask)
 
 	r.TaskScheduler = chrono.NewDefaultTaskScheduler()

@@ -10,11 +10,13 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func (c *Client) ReconcileChallenge(challenges map[string]*v1.ChallengeSpec) error {
+func (c *Client) ReconcileChallenge(challenges map[string]*v1.ChallengeSpec) (errors map[string]error, err error) {
+	errors = make(map[string]error)
+
 	ctfChallenges, err := c.GetChallenges()
 	if err != nil {
 		logrus.WithError(err).Error("Failed to get challenges")
-		return err
+		return nil, err
 	}
 
 	// Create a map of challenges
@@ -24,7 +26,7 @@ func (c *Client) ReconcileChallenge(challenges map[string]*v1.ChallengeSpec) err
 			ctfChallenge, err := c.GetChallenge(challenge.ID)
 			if err != nil {
 				logrus.WithError(err).WithField("challenge_id", challenge.ID).Error("Failed to get challenge")
-				return err
+				return nil, err
 			}
 
 			challengesToDelete[ctfChallenge.Slug] = ctfChallenge
@@ -41,14 +43,14 @@ func (c *Client) ReconcileChallenge(challenges map[string]*v1.ChallengeSpec) err
 			err := c.UpdateChallenge(ctfChallenge.ID, challenge)
 			if err != nil {
 				logrus.WithField("challenge_name", challenge.Name).Error("Failed to update challenge")
-				return err
+				errors[challenge.Name] = fmt.Errorf("failed to update challenge: %w", err)
 			}
 		} else {
 			// If the challenge does not exist, create it
 			err := c.InsertChallenge(challenge)
 			if err != nil {
 				logrus.WithField("challenge_name", challenge.Name).Error("Failed to create challenge")
-				return err
+				errors[challenge.Name] = fmt.Errorf("failed to create challenge: %w", err)
 			}
 		}
 	}
@@ -58,7 +60,7 @@ func (c *Client) ReconcileChallenge(challenges map[string]*v1.ChallengeSpec) err
 		err := c.DeleteChallenge(challenge.ID)
 		if err != nil {
 			logrus.WithField("challenge_id", challenge.ID).Error("Failed to delete challenge")
-			return err
+			errors[challenge.Slug] = fmt.Errorf("failed to delete challenge: %w", err)
 		}
 	}
 
@@ -66,10 +68,10 @@ func (c *Client) ReconcileChallenge(challenges map[string]*v1.ChallengeSpec) err
 	err = c.ReconcileRequirements(challenges)
 	if err != nil {
 		logrus.WithError(err).Error("Failed to reconcile requirements")
-		return err
+		return nil, err
 	}
 
-	return nil
+	return errors, nil
 }
 
 func (c *Client) InsertChallenge(challenge *v1.ChallengeSpec) error {
@@ -104,6 +106,9 @@ func (c *Client) InsertChallenge(challenge *v1.ChallengeSpec) error {
 
 		var apiFiles []*api.InputFile
 		for i, f := range challenge.Files {
+			if i >= len(fileDatas) {
+				logrus.WithField("challenge_name", challenge.Name).WithField("file_name", f.Name).Error("Failed to download file")
+			}
 			apiFiles = append(apiFiles, &api.InputFile{
 				Name:    f.Name,
 				Content: fileDatas[i],

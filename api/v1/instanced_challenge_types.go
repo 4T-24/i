@@ -89,11 +89,13 @@ type InstancedChallengeSpec struct {
 // +kubebuilder:object:root=true
 
 // InstancedChallenge is the Schema for the challenges API
+// +kubebuilder:subresource:status
 type InstancedChallenge struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec InstancedChallengeSpec `json:"spec,omitempty"`
+	Spec   InstancedChallengeSpec `json:"spec,omitempty"`
+	Status ChallengeStatus        `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true
