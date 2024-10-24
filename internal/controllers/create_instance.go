@@ -70,7 +70,6 @@ func (r *InstancierReconciler) CreateInstance(challengeId, instanceId string) (*
 		},
 	}
 	namespaceObj.Labels["i.4ts.fr/ttl"] = fmt.Sprint(chall.Timeout)
-	namespaceObj.Labels["i.4ts.fr/stops-at"] = time.Now().Add(time.Duration(chall.Timeout) * time.Second).Format(time.RFC3339)
 	namespaceObj.Labels["i.4ts.fr/stops-at-timestamp"] = fmt.Sprint(time.Now().Add(time.Duration(chall.Timeout) * time.Second).Unix())
 
 	err := failsafe.Run(func() error {
