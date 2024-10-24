@@ -83,6 +83,7 @@ func (r *InstancierReconciler) Register(ctx context.Context, req ctrl.Request) (
 			r.UnregisterChallenge(&challenge)
 			return ctrl.Result{}, nil
 		}
+		challenge.Status.Phase = "Syncing"
 		r.RegisterChallenge(&challenge)
 		return ctrl.Result{}, nil
 	}
@@ -95,6 +96,7 @@ func (r *InstancierReconciler) Register(ctx context.Context, req ctrl.Request) (
 			r.UnregisterChallenge(&instancedChallenge)
 			return ctrl.Result{}, nil
 		}
+		instancedChallenge.Status.Phase = "Syncing"
 		r.RegisterChallenge(&instancedChallenge)
 		return ctrl.Result{}, nil
 	}
@@ -106,7 +108,20 @@ func (r *InstancierReconciler) Register(ctx context.Context, req ctrl.Request) (
 			r.UnregisterChallenge(&oracleInstancedChallenge)
 			return ctrl.Result{}, nil
 		}
+		oracleInstancedChallenge.Status.Phase = "Syncing"
 		r.RegisterChallenge(&oracleInstancedChallenge)
+		return ctrl.Result{}, nil
+	}
+
+	var globallyInstancedChallenge v1.GloballyInstancedChallenge
+	err = r.Get(ctx, req.NamespacedName, &globallyInstancedChallenge)
+	if err == nil {
+		if globallyInstancedChallenge.DeletionTimestamp != nil {
+			r.UnregisterChallenge(&globallyInstancedChallenge)
+			return ctrl.Result{}, nil
+		}
+		globallyInstancedChallenge.Status.Phase = "Syncing"
+		r.RegisterChallenge(&globallyInstancedChallenge)
 		return ctrl.Result{}, nil
 	}
 
@@ -133,8 +148,10 @@ func (r *InstancierReconciler) ReconcileCTFd() error {
 			}
 			r.Get(context.Background(), client.ObjectKeyFromObject(&obj), &obj)
 			obj.Status.Error = ""
+			obj.Status.Phase = "Synced"
 			if found {
 				obj.Status.Error = err.Error()
+				obj.Status.Phase = "Error"
 			}
 			r.Status().Update(context.Background(), &obj)
 		case *v1.InstancedChallenge:
@@ -143,8 +160,10 @@ func (r *InstancierReconciler) ReconcileCTFd() error {
 			}
 			r.Get(context.Background(), client.ObjectKeyFromObject(&obj), &obj)
 			obj.Status.Error = ""
+			obj.Status.Phase = "Synced"
 			if found {
 				obj.Status.Error = err.Error()
+				obj.Status.Phase = "Error"
 			}
 			r.Status().Update(context.Background(), &obj)
 		case *v1.GloballyInstancedChallenge:
@@ -153,8 +172,10 @@ func (r *InstancierReconciler) ReconcileCTFd() error {
 			}
 			r.Get(context.Background(), client.ObjectKeyFromObject(&obj), &obj)
 			obj.Status.Error = ""
+			obj.Status.Phase = "Synced"
 			if found {
 				obj.Status.Error = err.Error()
+				obj.Status.Phase = "Error"
 			}
 			r.Status().Update(context.Background(), &obj)
 		case *v1.OracleInstancedChallenge:
@@ -163,8 +184,10 @@ func (r *InstancierReconciler) ReconcileCTFd() error {
 			}
 			r.Get(context.Background(), client.ObjectKeyFromObject(&obj), &obj)
 			obj.Status.Error = ""
+			obj.Status.Phase = "Synced"
 			if found {
 				obj.Status.Error = err.Error()
+				obj.Status.Phase = "Error"
 			}
 			r.Status().Update(context.Background(), &obj)
 		}

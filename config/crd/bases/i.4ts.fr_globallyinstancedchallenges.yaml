@@ -14,7 +14,23 @@ spec:
     singular: globallyinstancedchallenge
   scope: Namespaced
   versions:
-  - name: v1
+  - additionalPrinterColumns:
+    - jsonPath: .status.phase
+      name: Phase
+      type: string
+    - jsonPath: .spec.category
+      name: Category
+      type: string
+    - jsonPath: .spec.initial_value
+      name: Initial Value
+      type: integer
+    - jsonPath: .spec.minimum_value
+      name: Min Value
+      type: integer
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    name: v1
     schema:
       openAPIV3Schema:
         properties:
@@ -3767,8 +3783,11 @@ spec:
             properties:
               error:
                 type: string
+              phase:
+                type: string
             required:
             - error
+            - phase
             type: object
         type: object
     served: true

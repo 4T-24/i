@@ -38,6 +38,11 @@ type GloballyInstancedChallengeSpec struct {
 
 // GloballyInstancedChallenge is the Schema for the GlobalChallenges API
 // +kubebuilder:subresource:status
+// +kubebuilder:printcolumn:name="Phase",type="string",JSONPath=".status.phase"
+// +kubebuilder:printcolumn:name="Category",type="string",JSONPath=".spec.category"
+// +kubebuilder:printcolumn:name="Initial Value",type="integer",JSONPath=".spec.initial_value"
+// +kubebuilder:printcolumn:name="Min Value",type="integer",JSONPath=".spec.minimum_value"
+// +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 type GloballyInstancedChallenge struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
