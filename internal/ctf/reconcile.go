@@ -43,14 +43,14 @@ func (c *Client) ReconcileChallenge(challenges map[string]*v1.ChallengeSpec) (er
 			err := c.UpdateChallenge(ctfChallenge.ID, challenge)
 			if err != nil {
 				logrus.WithField("challenge_name", challenge.Name).Error("Failed to update challenge")
-				errors[challenge.Name] = fmt.Errorf("failed to update challenge: %w", err)
+				errors[challenge.Slug] = fmt.Errorf("failed to update challenge: %w", err)
 			}
 		} else {
 			// If the challenge does not exist, create it
 			err := c.InsertChallenge(challenge)
 			if err != nil {
 				logrus.WithField("challenge_name", challenge.Name).Error("Failed to create challenge")
-				errors[challenge.Name] = fmt.Errorf("failed to create challenge: %w", err)
+				errors[challenge.Slug] = fmt.Errorf("failed to create challenge: %w", err)
 			}
 		}
 	}
@@ -102,13 +102,11 @@ func (c *Client) InsertChallenge(challenge *v1.ChallengeSpec) error {
 		fileDatas, err := files.GetFiles(challenge.Repository, filePaths)
 		if err != nil {
 			logrus.WithError(err).WithField("challenge_name", challenge.Name).Error("Failed to download files from git")
+			return err
 		}
 
 		var apiFiles []*api.InputFile
 		for i, f := range challenge.Files {
-			if i >= len(fileDatas) {
-				logrus.WithField("challenge_name", challenge.Name).WithField("file_name", f.Name).Error("Failed to download file")
-			}
 			apiFiles = append(apiFiles, &api.InputFile{
 				Name:    f.Name,
 				Content: fileDatas[i],

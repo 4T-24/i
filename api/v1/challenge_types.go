@@ -130,7 +130,7 @@ type ChallengeSpec struct {
 
 // ChallengeStatus defines the observed state of Challenge
 type ChallengeStatus struct {
-	Error string `json:"phase"`
+	Error string `json:"error"`
 }
 
 // Challenge is the Schema for the challenges API

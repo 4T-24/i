@@ -26,6 +26,7 @@ type InstancierReconciler struct {
 	Scheme *runtime.Scheme
 
 	init bool
+	skip int
 
 	challenges          map[string]client.Object
 	ctfdChallengesSpecs map[string]*v1.ChallengeSpec
@@ -53,6 +54,12 @@ func (r *InstancierReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	defer reconcilerMutex.Unlock()
 
 	_ = log.FromContext(ctx)
+
+	if r.skip > 0 {
+		r.skip--
+		logrus.WithField("skips_left", r.skip).Info("Skipped init reconciliation, we already did it in the first occurence when fetching all.")
+		return ctrl.Result{}, nil
+	}
 
 	// Init map if not init
 	if !r.init {
@@ -117,37 +124,49 @@ func (r *InstancierReconciler) ReconcileCTFd() error {
 		return err
 	}
 
-	for slug, err := range errors {
-		challObj, found := r.challenges[slug]
+	for name, challObj := range r.challenges {
+		err, found := errors[name]
 		switch chall := challObj.(type) {
 		case *v1.Challenge:
-			if found {
-				chall.Status.Error = err.Error()
-			} else {
-				chall.Status.Error = ""
+			var obj = v1.Challenge{
+				ObjectMeta: chall.ObjectMeta,
 			}
+			r.Get(context.Background(), client.ObjectKeyFromObject(&obj), &obj)
+			obj.Status.Error = ""
+			if found {
+				obj.Status.Error = err.Error()
+			}
+			r.Status().Update(context.Background(), &obj)
 		case *v1.InstancedChallenge:
-			if found {
-				chall.Status.Error = err.Error()
-			} else {
-				chall.Status.Error = ""
+			var obj = v1.InstancedChallenge{
+				ObjectMeta: chall.ObjectMeta,
 			}
+			r.Get(context.Background(), client.ObjectKeyFromObject(&obj), &obj)
+			obj.Status.Error = ""
+			if found {
+				obj.Status.Error = err.Error()
+			}
+			r.Status().Update(context.Background(), &obj)
 		case *v1.GloballyInstancedChallenge:
-			if found {
-				chall.Status.Error = err.Error()
-			} else {
-				chall.Status.Error = ""
+			var obj = v1.GloballyInstancedChallenge{
+				ObjectMeta: chall.ObjectMeta,
 			}
+			r.Get(context.Background(), client.ObjectKeyFromObject(&obj), &obj)
+			obj.Status.Error = ""
+			if found {
+				obj.Status.Error = err.Error()
+			}
+			r.Status().Update(context.Background(), &obj)
 		case *v1.OracleInstancedChallenge:
-			if found {
-				chall.Status.Error = err.Error()
-			} else {
-				chall.Status.Error = ""
+			var obj = v1.OracleInstancedChallenge{
+				ObjectMeta: chall.ObjectMeta,
 			}
-		}
-		err := r.Status().Update(context.Background(), challObj)
-		if err != nil {
-			logrus.WithError(err).Error("Failed to update status for challenge")
+			r.Get(context.Background(), client.ObjectKeyFromObject(&obj), &obj)
+			obj.Status.Error = ""
+			if found {
+				obj.Status.Error = err.Error()
+			}
+			r.Status().Update(context.Background(), &obj)
 		}
 	}
 
@@ -242,6 +261,7 @@ func (r *InstancierReconciler) Reinit() {
 
 	if !r.init {
 		logrus.Info("Init successful")
+		r.skip = len(r.challenges) - 1
 	}
 	r.init = true
 }

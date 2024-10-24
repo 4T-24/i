@@ -3748,10 +3748,10 @@ spec:
             type: object
           status:
             properties:
-              phase:
+              error:
                 type: string
             required:
-            - phase
+            - error
             type: object
         type: object
     served: true

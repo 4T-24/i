@@ -1,6 +1,7 @@
 package files
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"path"
@@ -37,12 +38,12 @@ func GetFiles(repo string, files []string) ([][]byte, error) {
 
 	var filesData [][]byte = make([][]byte, len(files))
 
-	for i, file := range files {
-		path := path.Join(tempDir, file)
+	for i, fileName := range files {
+		path := path.Join(tempDir, fileName)
 
 		file, err := os.Open(path)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to get file %s: %w", fileName, err)
 		}
 
 		b, err := io.ReadAll(file)

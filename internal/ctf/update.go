@@ -27,7 +27,8 @@ func (c *Client) UpdateChallenge(id int, challenge *v1.ChallengeSpec) error {
 	if len(challenge.Files) > 0 {
 		err = c.VerifyChallengeFiles(id, challenge)
 		if err != nil {
-			logrus.WithField("challenge_name", challenge.Name).Error("Failed to verify files")
+			logrus.WithField("challenge_name", challenge.Name).WithError(err).Error("Failed to verify files")
+			return err
 		}
 	}
 
