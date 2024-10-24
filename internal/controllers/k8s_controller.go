@@ -2,6 +2,8 @@ package controllers
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	v1 "instancer/api/v1"
 	"instancer/internal/ctf"
 	"strconv"
@@ -66,6 +68,8 @@ func (r *InstancierReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		r.Reinit()
 	}
 
+	fmt.Println(req.Name)
+
 	res, err := r.Register(ctx, req)
 	if err != nil {
 		return res, err
@@ -79,11 +83,8 @@ func (r *InstancierReconciler) Register(ctx context.Context, req ctrl.Request) (
 	var challenge v1.Challenge
 	err := r.Get(ctx, req.NamespacedName, &challenge)
 	if err == nil {
-		if challenge.DeletionTimestamp != nil {
-			r.UnregisterChallenge(&challenge)
-			return ctrl.Result{}, nil
-		}
 		challenge.Status.Phase = "Syncing"
+		r.Status().Update(context.Background(), &challenge)
 		r.RegisterChallenge(&challenge)
 		return ctrl.Result{}, nil
 	}
@@ -92,11 +93,8 @@ func (r *InstancierReconciler) Register(ctx context.Context, req ctrl.Request) (
 	var instancedChallenge v1.InstancedChallenge
 	err = r.Get(ctx, req.NamespacedName, &instancedChallenge)
 	if err == nil {
-		if instancedChallenge.DeletionTimestamp != nil {
-			r.UnregisterChallenge(&instancedChallenge)
-			return ctrl.Result{}, nil
-		}
 		instancedChallenge.Status.Phase = "Syncing"
+		r.Status().Update(context.Background(), &instancedChallenge)
 		r.RegisterChallenge(&instancedChallenge)
 		return ctrl.Result{}, nil
 	}
@@ -104,11 +102,8 @@ func (r *InstancierReconciler) Register(ctx context.Context, req ctrl.Request) (
 	var oracleInstancedChallenge v1.OracleInstancedChallenge
 	err = r.Get(ctx, req.NamespacedName, &oracleInstancedChallenge)
 	if err == nil {
-		if oracleInstancedChallenge.DeletionTimestamp != nil {
-			r.UnregisterChallenge(&oracleInstancedChallenge)
-			return ctrl.Result{}, nil
-		}
 		oracleInstancedChallenge.Status.Phase = "Syncing"
+		r.Status().Update(context.Background(), &oracleInstancedChallenge)
 		r.RegisterChallenge(&oracleInstancedChallenge)
 		return ctrl.Result{}, nil
 	}
@@ -116,11 +111,8 @@ func (r *InstancierReconciler) Register(ctx context.Context, req ctrl.Request) (
 	var globallyInstancedChallenge v1.GloballyInstancedChallenge
 	err = r.Get(ctx, req.NamespacedName, &globallyInstancedChallenge)
 	if err == nil {
-		if globallyInstancedChallenge.DeletionTimestamp != nil {
-			r.UnregisterChallenge(&globallyInstancedChallenge)
-			return ctrl.Result{}, nil
-		}
 		globallyInstancedChallenge.Status.Phase = "Syncing"
+		r.Status().Update(context.Background(), &globallyInstancedChallenge)
 		r.RegisterChallenge(&globallyInstancedChallenge)
 		return ctrl.Result{}, nil
 	}
@@ -329,8 +321,28 @@ func predicates() predicate.Predicate {
 		GenericFunc: func(genericEvent event.GenericEvent) bool {
 			return false
 		},
-		UpdateFunc: func(updateEvent event.UpdateEvent) bool {
-			return true
+		UpdateFunc: func(e event.UpdateEvent) bool {
+			var oldSpec, newSpec []byte
+
+			switch newObject := e.ObjectNew.(type) {
+			case *v1.Challenge:
+				oldObject := e.ObjectOld.(*v1.Challenge)
+				oldSpec, _ = json.Marshal(oldObject.Spec)
+				newSpec, _ = json.Marshal(newObject.Spec)
+			case *v1.InstancedChallenge:
+				oldObject := e.ObjectOld.(*v1.InstancedChallenge)
+				oldSpec, _ = json.Marshal(oldObject.Spec)
+				newSpec, _ = json.Marshal(newObject.Spec)
+			case *v1.GloballyInstancedChallenge:
+				oldObject := e.ObjectOld.(*v1.GloballyInstancedChallenge)
+				oldSpec, _ = json.Marshal(oldObject.Spec)
+				newSpec, _ = json.Marshal(newObject.Spec)
+			case *v1.OracleInstancedChallenge:
+				oldObject := e.ObjectOld.(*v1.OracleInstancedChallenge)
+				oldSpec, _ = json.Marshal(oldObject.Spec)
+				newSpec, _ = json.Marshal(newObject.Spec)
+			}
+			return string(oldSpec) != string(newSpec)
 		},
 	}
 }

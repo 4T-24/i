@@ -43,7 +43,7 @@ func GetFiles(repo string, files []string) ([][]byte, error) {
 
 		file, err := os.Open(path)
 		if err != nil {
-			return nil, fmt.Errorf("failed to get file %s: %w", fileName, err)
+			return nil, fmt.Errorf("failed to get file %s from git", fileName)
 		}
 
 		b, err := io.ReadAll(file)
