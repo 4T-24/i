@@ -9,7 +9,7 @@ import (
 func SetupServer(reconciler *controllers.InstancierReconciler) {
 	s := fuego.NewServer()
 
-	s.Addr = "0.0.0.0:8070"
+	s.Addr = "0.0.0.0:8080"
 
 	fuego.Get(s, "/api/v1/token/{instanceId}", GetToken(reconciler), FromCtfd)
 
