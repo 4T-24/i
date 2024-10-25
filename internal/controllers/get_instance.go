@@ -48,6 +48,23 @@ func (r *InstancierReconciler) GetChallengeSpec(challengeId string) (*v1.Instanc
 	}
 }
 
+func (r *InstancierReconciler) GetEvents(challengeId, instanceId string) ([]string, error) {
+	var result []string
+
+	chall, found := r.GetChallengeSpec(challengeId)
+	if !found {
+		return nil, fmt.Errorf("chall not found")
+	}
+
+	result = append(result, fmt.Sprintf("namespace/atsi-%s-%s", chall.Slug, instanceId))
+
+	for _, pod := range chall.Pods {
+		result = append(result, fmt.Sprintf("deploy/atsi-%s-%s/%s", chall.Slug, instanceId, pod.Name))
+	}
+
+	return result, nil
+}
+
 func (r *InstancierReconciler) GetInstance(challengeId, instanceId string) (*InstanceStatus, error) {
 	var status = &InstanceStatus{}
 

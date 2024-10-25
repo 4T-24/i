@@ -7,6 +7,7 @@ import (
 	"instancer/internal/controllers"
 	"instancer/internal/ctf"
 	"instancer/internal/env"
+	eventwatcher "instancer/internal/eventWatcher"
 	"instancer/web"
 	"os"
 
@@ -90,6 +91,8 @@ func main() {
 	if secureMetrics {
 		metricsServerOptions.FilterProvider = filters.WithAuthenticationAndAuthorization
 	}
+
+	go eventwatcher.Watch()
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:                 scheme,

@@ -13,6 +13,8 @@ type Config struct {
 
 	Token       string `env:"TOKEN"`
 	GlobalToken string `env:"GLOBAL_TOKEN"`
+
+	SigningKey string `env:"SIGNING_KEY"`
 }
 
 func Get() *Config {

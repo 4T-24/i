@@ -3,7 +3,6 @@ package controllers
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	v1 "instancer/api/v1"
 	"instancer/internal/ctf"
 	"strconv"
@@ -67,8 +66,6 @@ func (r *InstancierReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	if !r.init {
 		r.Reinit()
 	}
-
-	fmt.Println(req.Name)
 
 	res, err := r.Register(ctx, req)
 	if err != nil {
