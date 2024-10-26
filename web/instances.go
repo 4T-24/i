@@ -1,7 +1,6 @@
 package web
 
 import (
-	"fmt"
 	"instancer/internal/auth"
 	"instancer/internal/controllers"
 	eventwatcher "instancer/internal/eventWatcher"
@@ -41,8 +40,6 @@ func ListenInstance(reconciler *controllers.InstancierReconciler) func(http.Resp
 		challengeId := r.PathValue("challengeId")
 		instanceId := r.PathValue("instanceId")
 
-		fmt.Println(challengeId)
-
 		conn, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {
 			http.Error(w, "could not upgrade to websocket", http.StatusBadRequest)
@@ -51,7 +48,6 @@ func ListenInstance(reconciler *controllers.InstancierReconciler) func(http.Resp
 		defer conn.Close()
 
 		_, p, err := conn.ReadMessage()
-		fmt.Println(string(p))
 		if err != nil {
 			return
 		}
@@ -60,7 +56,6 @@ func ListenInstance(reconciler *controllers.InstancierReconciler) func(http.Resp
 
 		claims, err := auth.Verify(token)
 		if err != nil {
-			fmt.Println(err)
 			return
 		}
 
