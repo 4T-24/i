@@ -9,7 +9,12 @@ type Config struct {
 	CTFd struct {
 		URL   string `env:"URL"`
 		Token string `env:"TOKEN"`
-	} `envPrefix:"CTFD_"`
+	}
+
+	Discord struct {
+		WebhookId    uint64 `env:"WEBHOOK_ID"`
+		WebhookToken string `env:"WEBHOOK_TOKEN"`
+	} `envPrefix:"DISCORD_"`
 
 	Token       string `env:"TOKEN"`
 	GlobalToken string `env:"GLOBAL_TOKEN"`

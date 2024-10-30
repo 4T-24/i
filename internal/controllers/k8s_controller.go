@@ -3,8 +3,11 @@ package controllers
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	v1 "instancer/api/v1"
 	"instancer/internal/ctf"
+	"instancer/internal/discord"
+	"instancer/internal/env"
 	"strconv"
 	"sync"
 	"time"
@@ -128,7 +131,11 @@ func (r *InstancierReconciler) ReconcileCTFd() error {
 		return err
 	}
 
+	cfg := env.Get()
+
 	for name, challObj := range r.challenges {
+		var oldError, newError string
+
 		err, found := errors[name]
 		switch chall := challObj.(type) {
 		case *v1.Challenge:
@@ -136,49 +143,65 @@ func (r *InstancierReconciler) ReconcileCTFd() error {
 				ObjectMeta: chall.ObjectMeta,
 			}
 			r.Get(context.Background(), client.ObjectKeyFromObject(&obj), &obj)
+			oldError = obj.Status.Error
 			obj.Status.Error = ""
 			obj.Status.Phase = "Synced"
 			if found {
 				obj.Status.Error = err.Error()
 				obj.Status.Phase = "Error"
 			}
+			newError = obj.Status.Error
 			r.Status().Update(context.Background(), &obj)
 		case *v1.InstancedChallenge:
 			var obj = v1.InstancedChallenge{
 				ObjectMeta: chall.ObjectMeta,
 			}
 			r.Get(context.Background(), client.ObjectKeyFromObject(&obj), &obj)
+			oldError = obj.Status.Error
 			obj.Status.Error = ""
 			obj.Status.Phase = "Synced"
 			if found {
 				obj.Status.Error = err.Error()
 				obj.Status.Phase = "Error"
 			}
+			newError = obj.Status.Error
 			r.Status().Update(context.Background(), &obj)
 		case *v1.GloballyInstancedChallenge:
 			var obj = v1.GloballyInstancedChallenge{
 				ObjectMeta: chall.ObjectMeta,
 			}
 			r.Get(context.Background(), client.ObjectKeyFromObject(&obj), &obj)
+			oldError = obj.Status.Error
 			obj.Status.Error = ""
 			obj.Status.Phase = "Synced"
 			if found {
 				obj.Status.Error = err.Error()
 				obj.Status.Phase = "Error"
 			}
+			newError = obj.Status.Error
 			r.Status().Update(context.Background(), &obj)
 		case *v1.OracleInstancedChallenge:
 			var obj = v1.OracleInstancedChallenge{
 				ObjectMeta: chall.ObjectMeta,
 			}
 			r.Get(context.Background(), client.ObjectKeyFromObject(&obj), &obj)
+			oldError = obj.Status.Error
 			obj.Status.Error = ""
 			obj.Status.Phase = "Synced"
 			if found {
 				obj.Status.Error = err.Error()
 				obj.Status.Phase = "Error"
 			}
+			newError = obj.Status.Error
 			r.Status().Update(context.Background(), &obj)
+		}
+
+		if cfg.Discord.WebhookToken != "" && oldError != newError {
+			if newError != "" {
+				discord.SendMessage("Challenge status changed to error", fmt.Sprintf("Got error when reconciling challenge : %v", newError), 16711680)
+			} else {
+				discord.SendMessage("Challenge status changed to resolved", fmt.Sprintf("Error was : %v", oldError), 65280)
+			}
 		}
 	}
 

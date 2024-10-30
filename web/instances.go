@@ -3,7 +3,7 @@ package web
 import (
 	"instancer/internal/auth"
 	"instancer/internal/controllers"
-	eventwatcher "instancer/internal/eventWatcher"
+	event_watcher "instancer/internal/event_watcher"
 	"net/http"
 	"time"
 
@@ -68,14 +68,14 @@ func ListenInstance(reconciler *controllers.InstancierReconciler) func(http.Resp
 			return
 		}
 
-		worker := eventwatcher.NewWorker()
+		worker := event_watcher.NewWorker()
 		defer close(worker.Channel)
 
 		for _, eventType := range events {
-			listener, found := eventwatcher.Listeners[eventType]
+			listener, found := event_watcher.Listeners[eventType]
 			if !found {
-				listener = new(eventwatcher.Listener)
-				eventwatcher.Listeners[eventType] = listener
+				listener = new(event_watcher.Listener)
+				event_watcher.Listeners[eventType] = listener
 			}
 			listener.Add(worker)
 			defer listener.Remove(worker)

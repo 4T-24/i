@@ -6,8 +6,9 @@ import (
 	v1 "instancer/api/v1"
 	"instancer/internal/controllers"
 	"instancer/internal/ctf"
+	"instancer/internal/discord"
 	"instancer/internal/env"
-	eventwatcher "instancer/internal/eventWatcher"
+	event_watcher "instancer/internal/event_watcher"
 	"instancer/web"
 	"os"
 
@@ -92,7 +93,8 @@ func main() {
 		metricsServerOptions.FilterProvider = filters.WithAuthenticationAndAuthorization
 	}
 
-	go eventwatcher.Watch()
+	discord.InitDiscordClient()
+	go event_watcher.Watch()
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:                 scheme,

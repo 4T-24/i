@@ -1,4 +1,4 @@
-package eventwatcher
+package event_watcher
 
 import (
 	"fmt"
