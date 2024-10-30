@@ -198,9 +198,9 @@ func (r *InstancierReconciler) ReconcileCTFd() error {
 
 		if cfg.Discord.WebhookToken != "" && oldError != newError {
 			if newError != "" {
-				discord.SendMessage("Challenge status changed to error", fmt.Sprintf("Got error when reconciling challenge : %v", newError), 16711680)
+				discord.SendMessage(fmt.Sprintf("%s status changed to error", name), fmt.Sprintf("Got error when reconciling challenge : %v", newError), 16711680)
 			} else {
-				discord.SendMessage("Challenge status changed to resolved", fmt.Sprintf("Error was : %v", oldError), 65280)
+				discord.SendMessage(fmt.Sprintf("%s status changed to resolved", name), fmt.Sprintf("Error was : %v", oldError), 65280)
 			}
 		}
 	}
