@@ -1,6 +1,7 @@
 package ctf
 
 import (
+	"fmt"
 	"instancer/internal/env"
 
 	ctfd "github.com/ctfer-io/go-ctfd/api"
@@ -16,6 +17,7 @@ type Client struct {
 func New() *Client {
 	c := env.Get()
 
+	fmt.Println(c.CTFd.URL)
 	nonce, session, err := ctfd.GetNonceAndSession(c.CTFd.URL)
 	if err != nil {
 		logrus.Fatalf("Failed getting nonce and session: %s", err)
