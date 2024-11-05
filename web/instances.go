@@ -88,6 +88,18 @@ func ListenInstance(reconciler *controllers.InstancierReconciler) func(http.Resp
 		}
 		conn.WriteJSON(status)
 
+		// While the connection is alive, we'll send the status every 30 seconds, to be sure we're not stucking the user
+		go func() {
+			for {
+				time.Sleep(30 * time.Second)
+				status, _ := reconciler.GetInstance(challengeId, instanceId)
+				err := conn.WriteJSON(status)
+				if err != nil {
+					return
+				}
+			}
+		}()
+
 		for range worker.Channel {
 			time.Sleep(1 * time.Second)
 			status, _ := reconciler.GetInstance(challengeId, instanceId)
