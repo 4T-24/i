@@ -81,13 +81,6 @@ func ListenInstance(reconciler *controllers.InstancierReconciler) func(http.Resp
 			defer listener.Remove(worker)
 		}
 
-		status, err := reconciler.GetInstance(challengeId, instanceId)
-		if err != nil {
-			logrus.Error(err)
-			return
-		}
-		conn.WriteJSON(status)
-
 		// While the connection is alive, we'll send the status every 30 seconds, to be sure we're not stucking the user
 		go func() {
 			for {
@@ -99,6 +92,13 @@ func ListenInstance(reconciler *controllers.InstancierReconciler) func(http.Resp
 				}
 			}
 		}()
+
+		status, err := reconciler.GetInstance(challengeId, instanceId)
+		if err != nil {
+			logrus.Error(err)
+			return
+		}
+		conn.WriteJSON(status)
 
 		for range worker.Channel {
 			time.Sleep(1 * time.Second)

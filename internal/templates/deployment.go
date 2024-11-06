@@ -12,8 +12,9 @@ import (
 type DeploymentParams struct {
 	Name         string            // Name of the deployment
 	Namespace    string            // Namespace of the deployment
-	CommonLabels map[string]string // Common labels for the deployment
 	Egress       string            // Value for the Egress label
+	Annotations  map[string]string // Annotations for the deployment
+	CommonLabels map[string]string // Common labels for the deployment
 	Spec         core.PodSpec      // Specification for the deployment's pod spec
 }
 
@@ -40,14 +41,14 @@ func NewDeployment(p *DeploymentParams) *apps.Deployment {
 	var labels = p.CommonLabels
 	labels["i.4ts.fr/pod"] = p.Name
 
+	p.Annotations["io.kubernetes.cri-o.userns-mode"] = "auto:size=65536"
+
 	deployment := &apps.Deployment{
 		ObjectMeta: v1.ObjectMeta{
-			Name:      p.Name,
-			Namespace: p.Namespace,
-			Labels:    labels,
-			Annotations: map[string]string{
-				"io.kubernetes.cri-o.userns-mode": "auto:size=65536",
-			},
+			Name:        p.Name,
+			Namespace:   p.Namespace,
+			Labels:      labels,
+			Annotations: p.Annotations,
 		},
 		Spec: apps.DeploymentSpec{
 			Replicas: utils.Optional(int32(1)),
@@ -56,10 +57,8 @@ func NewDeployment(p *DeploymentParams) *apps.Deployment {
 			},
 			Template: core.PodTemplateSpec{
 				ObjectMeta: v1.ObjectMeta{
-					Labels: labels,
-					Annotations: map[string]string{
-						"io.kubernetes.cri-o.userns-mode": "auto:size=65536",
-					},
+					Labels:      labels,
+					Annotations: p.Annotations,
 				},
 				Spec: p.Spec,
 			},

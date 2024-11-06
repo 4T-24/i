@@ -131,12 +131,19 @@ func (r *InstancierReconciler) CreateInstance(challengeId, instanceId string) (*
 	}
 
 	for _, pod := range chall.Pods {
+		annotations := make(map[string]string)
+		for _, p := range pod.Ports {
+			annotations[fmt.Sprintf("i.4ts.fr/hostname-%d", p.Port)] = names.GetHost(pod.Name, p.Port, challengeId, id)
+			annotations[fmt.Sprintf("i.4ts.fr/uri-%d", p.Port)] = "https://" + names.GetHost(pod.Name, p.Port, challengeId, id)
+		}
+
 		deployment := templates.NewDeployment(&templates.DeploymentParams{
 			Name:         pod.Name,
 			Namespace:    namespace,
 			CommonLabels: commonLabels,
 			Egress:       strconv.FormatBool(pod.Egress),
 			Spec:         pod.Spec,
+			Annotations:  annotations,
 		})
 		err := failsafe.Run(func() error {
 			return r.Create(context.Background(), deployment)

@@ -93,7 +93,7 @@ func (r *InstancierReconciler) GetInstance(challengeId, instanceId string) (*Ins
 	for _, pod := range chall.Pods {
 		deployment, err := r.GetDeployment(pod.Name, names.GetNamespaceName(challengeId, instanceId))
 		if err != nil {
-			status.Status = "Unknown"
+			status.Status = "Errored"
 			logrus.Error(err)
 			return status, nil
 		}
