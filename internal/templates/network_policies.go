@@ -178,6 +178,36 @@ func NewNetworkPolicy(p *NetworkPolicyParams) []*networking.NetworkPolicy {
 				},
 			},
 		})
+
+		networkPolicies = append(networkPolicies, &networking.NetworkPolicy{
+			ObjectMeta: meta.ObjectMeta{
+				Name:      fmt.Sprintf("allow-instancer-%s", pod.Name),
+				Namespace: p.Namespace,
+			},
+			Spec: networking.NetworkPolicySpec{
+				PodSelector: meta.LabelSelector{
+					MatchLabels: map[string]string{
+						"i.4ts.fr/pod": pod.Name,
+					},
+				},
+				PolicyTypes: []networking.PolicyType{
+					networking.PolicyTypeIngress,
+				},
+				Ingress: []networking.NetworkPolicyIngressRule{
+					{
+						From: []networking.NetworkPolicyPeer{
+							{
+								NamespaceSelector: &meta.LabelSelector{
+									MatchLabels: map[string]string{
+										"kubernetes.io/metadata.name": "atsi-system",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		})
 	}
 
 	networkPolicies = append(networkPolicies, &networking.NetworkPolicy{

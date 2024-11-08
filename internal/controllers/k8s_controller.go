@@ -53,6 +53,7 @@ var reconcilerMutex sync.Mutex
 // +kubebuilder:rbac:groups=i.4ts.fr,resources=challenges,verbs=get;list;watch
 // +kubebuilder:rbac:groups=i.4ts.fr,resources=instancedchallenges,verbs=get;list;watch
 // +kubebuilder:rbac:groups=i.4ts.fr,resources=oracleinstancedchallenges,verbs=get;list;watch
+// +kubebuilder:rbac:groups=i.4ts.fr,resources=globallyinstancedchallenges,verbs=get;list;watch
 func (r *InstancierReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	reconcilerMutex.Lock()
 	defer reconcilerMutex.Unlock()

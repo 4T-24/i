@@ -85,3 +85,18 @@ rules:
   verbs:
   - create
   - delete
+- apiGroups:
+  - i.4ts.fr
+  resources:
+  - globallyinstancedchallenges
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - networking.k8s.io
+  resources:
+  - networkpolicies
+  verbs:
+  - create
+  - delete
